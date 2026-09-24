@@ -1,0 +1,335 @@
+#sidebar {
+    width: 100px;
+    height: 800px;
+    background-color: #292626;
+    box-sizing: border-box;
+    position: fixed;
+    align-items: center;
+    z-index: 10;
+}
+
+#flowchartmaker {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    color: rgb(8, 8, 8);
+    font-size: 14px;
+    background-color: rgb(90, 90, 89);
+    margin: 0 auto;
+    margin-top: 20px;
+}
+
+#sheet {
+    margin-left: 120px;
+    padding: 20px;
+    position: relative;
+    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.chart {
+    width: 100%;    /* fills the wrapper, so resizing the wrapper visibly resizes this */
+    height: 100%;
+    background-color: #f0f0f0;
+    border: 1px solid #000000;
+    box-sizing: border-box;
+    position: relative;
+    display: flex;            
+    flex-direction: column; 
+}
+
+* { box-sizing: border-box; }
+
+main { max-width: 820px; margin: 0 auto; }
+
+h1 { font-size: 1.4rem; margin-bottom: 4px; }
+
+p.desc {
+    color: var(--text-dim);
+    font-size: 0.92rem;
+    margin: 0 0 20px;
+    max-width: 62ch;
+}
+
+code {
+    font-family: var(--mono);
+    background: #262a31;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 0.88em;
+}
+
+.toolbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+button#addCanvasBtn {
+    background: var(--accent);
+    color: #0d1117;
+    border: none;
+    font-weight: 600;
+    padding: 9px 16px;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    cursor: pointer;
+}
+
+button#addCanvasBtn:hover { filter: brightness(1.08); }
+
+.workspace {
+    position: relative;           /* positioning context for every chart-canvas */
+    width: 100%;
+    height: 460px;
+    background:
+      repeating-linear-gradient(45deg, #1a1d22, #1a1d22 10px, #181b20 10px, #181b20 20px);
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.chart-canvas {
+    position: absolute;
+    width: 220px;
+    height: 130px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-canvas.active {
+    border-color: var(--accent);
+}
+
+.chart-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: move;
+    touch-action: none;
+    padding: 6px 8px 6px 10px;
+    background: var(--panel-header);
+    border-bottom: 1px solid var(--border);
+    border-radius: 6px 6px 0 0;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    user-select: none;
+    background-color: bisque;
+}
+
+
+.headerBtn {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 2px 4px;
+    margin-left: 3px;
+    margin-right: 3px;
+}
+
+.chart-header { color: #ff6b6b; }
+
+.resize-handle {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 16px;
+    height: 16px;
+    cursor: nwse-resize;
+    touch-action: none;
+}
+
+.resize-handle::after {
+    content: "";
+    position: absolute;
+    right: 4px;
+    bottom: 4px;
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid var(--accent);
+    border-bottom: 2px solid var(--accent);
+    opacity: 0.7;
+}
+
+.chart-container {
+    position: absolute;   /* required — makes left/top from JS actually apply */
+    width: 300px;          /* starting size — your JS never sets an initial
+                               width/height on creation, only top/left */
+    height: 200px;
+}
+
+#btnContainer {
+    display: flex;
+    gap: 4px;
+    border: #000000 solid 1.5px;
+    padding: 2px;
+    background-color: aquamarine;
+}
+
+.modal {
+    position: fixed;         /* covers the viewport regardless of scroll position */
+    inset: 0;                 /* shorthand for top:0; right:0; bottom:0; left:0 */
+    background: rgba(0, 0, 0, 0.6);  /* the "darker background" effect */
+    display: flex;            /* hidden by default */
+    align-items: center;       /* vertical centering */
+    justify-content: center;   /* horizontal centering */
+    z-index: 1000;              /* sit above everything else, including your flowchart canvas */
+    padding: 20px;
+}
+
+.objMenu {
+  background: #fff;
+  border-radius: 8px;
+  width: 200%;
+  height: 160%;
+  max-width: 680px;          /* caps how wide it gets on large screens */
+  max-height: 90vh;           /* never taller than 90% of the viewport */
+  overflow-y: auto;            /* scrolls internally if content is too tall, instead of overflowing the screen */
+  position: relative;           /* so .modal-close can be positioned inside it */
+}
+
+.objMenuHeader {
+    display: flex;
+    justify-content: space-between;
+    touch-action: none;
+    padding: 5px;
+    background: var(--panel-header);
+    border-bottom: 1px solid var(--border);
+    border-radius: 6px 6px 0 0;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    user-select: none;
+    background-color: bisque;
+    height: 35px;
+}
+
+#close-objMenu {
+    margin-left: 95%;
+}
+
+.objMenuBody {
+    padding: 10px;
+    align-items: center;
+    display: flex;
+}
+
+.objMenuItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px;
+    cursor: pointer;
+}
+
+.chart-body {
+    flex: 1;
+    padding: 10px;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    overflow: hidden;
+    position: relative;   /* ADD — positioning context for shapes + the SVG */
+}
+
+.connections-layer {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+[class^="shp"] {           /* matches any class starting with "shp" */
+    position: absolute;
+    width: 100px;
+    height: 60px;
+    background: #fff;
+    border: 2px solid #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    color: #111;
+    cursor: move;
+    touch-action: none;
+    user-select: none;
+    text-align: center;
+}
+
+.shproundrectangle { border-radius: 14px; }
+
+.shpoval, .shpsmallcircle { border-radius: 50%; }
+
+.shpsmallcircle { width: 60px; height: 60px; }
+
+.shpdiamond {
+    width: 70px;
+    height: 70px;
+    border: 2px solid #333;
+    background: #fff;
+    transform: rotate(45deg);
+    clip-path: none;   /* remove the old hack */
+    box-shadow: none;  /* remove the old hack */
+}
+
+.shpdiamond .shape-label {
+    transform: rotate(-45deg); /* cancels the parent's rotation so text reads normally */
+    white-space: nowrap;
+}
+
+.shpdiamond .shape-delete {
+    transform: rotate(-45deg);
+}
+
+.shpparallelogram { 
+    transform: skewX(-20deg); 
+}
+
+.shpparallelogram .shape-delete {
+    transform: skewX(20deg);
+}
+
+.shpparallelogram .shape-label {
+    transform: skewX(20deg);
+}
+
+.selected {
+    outline: 3px solid #5b8cff;
+    outline-offset: 2px;
+}
+
+.shape-label[contenteditable="true"] {
+    outline: 1px dashed #5b8cff;
+    cursor: text;
+}
+
+.shape-delete {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1px solid #333;
+    background: #fff;
+    color: #333;
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    z-index: 0;
+}
+.shape-delete:hover {
+    background: #ff6b6b;
+    color: #fff;
+    border-color: #ff6b6b;
+}
