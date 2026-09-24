@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="hompage.css">
+    <title>Document</title>
+
+</head>
+<body>
+    <nav class="glass-nav">
+        <div class="nav-logo">Noted!</div>
+        <div class="nav-links">
+            <a href="#">Refresh</a>
+            <a href="#">Settings</a>
+        </div>
+
+        <div class="profile-wrapper">
+            <button class="profile-btn" id="profileBtn">
+                <img src="" alt="Profile" class="avatar-img" id="avatarImg">
+            </button>
+
+            <div class="profile-dropdown" id="profileDropdown">
+                <div class="dropdown-avatar">
+                    <img src="" alt="Profile" id="dropdownAvatarImg">
+                    <button id="changePicBtn">Change photo</button>
+                </div>
+                 
+                <input type="text" id="nameInput" placeholder="Your name">
+
+                <button id="logoutBtn">Log out</button>
+            </div>
+        </div>
+    </nav>
+
+        <h1 id="title">Choose your workspace</h1>
+        <section id="workspace-section">
+
+            <section class="select-card" id="Private">
+                <h2>Private Projects</h2>
+                <p>Own projects, personal files
+                <div class="card-icon">🔒</div>
+            </section>
+
+            <section class="select-card" id="Shared">
+                <h2>Shared Projects</h2>
+                <p>Share your projects 
+                <p>with others and work together
+                <div class="card-icon">👥</div>
+            </section>
+
+        </section>
+
+    <script src="homepage.js"></script>
+</body>
+</html>
