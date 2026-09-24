@@ -1,0 +1,8 @@
+Shapes needed:
+-Start/End → rounded rectangle or oval (terminator)
+-Process → rectangle
+-Decision → diamond
+-Input/Output → parallelogram
+-Connector → small circle
+
+Where i left off: line 228 claude flowchart
