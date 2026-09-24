@@ -1,0 +1,12 @@
+CREATE DATABASE Noted;
+
+USE Noted;
+
+CREATE TABLE modules (
+    id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    project_id INT NOT NULL,
+    data LONGTEXT,
+    xPos BIGINT DEFAULT 0,
+    yPos BIGINT DEFAULT 0,
+    title TINYTEXT
+);

@@ -1,0 +1,16 @@
+card modal old code:
+// ===== OLD CODE (commented out for easy revert) =====
+    // modalOverlay.innerHTML = `
+    //     <div class="modal-content">
+    //         <div class="modal-header">${card.title}</div>
+    //         <div class="modal-body">
+    //             ${imageHtml}
+    //             <p>${card.description || 'No description provided'}</p>
+    //         </div>
+    //         <div class="modal-buttons">
+    //             <button class="modal-close-btn">Close</button>
+    //             <button class="modal-delete-btn">Delete Card</button>
+    //         </div>
+    //     </div>
+    // `;
+    // ===== END OLD CODE =====

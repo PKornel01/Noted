@@ -1,0 +1,36 @@
+#sidebar {
+    width: 100px;
+    height: 800px;
+    background-color: #292626;
+    box-sizing: border-box;
+    position: fixed;
+    align-items: center;
+    z-index: 10;
+}
+
+#kanbanmaker {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    color: rgb(8, 8, 8);
+    font-size: 14px;
+    background-color: rgb(90, 90, 89);
+    margin: 0 auto;
+    margin-top: 20px;
+}
+
+#flowchartmaker {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    color: rgb(8, 8, 8);
+    font-size: 14px;
+    background-color: rgb(90, 90, 89);
+    margin: 0 auto;
+    margin-top: 20px;
+}
+
+#sheet {
+    margin-left: 120px;
+    padding: 20px;
+}
