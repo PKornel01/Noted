@@ -1,3 +1,7 @@
+(async function requireLogin() {
+    const res = await fetch('/api/me');
+    if (!res.ok) window.location.href = '/login.html';
+})();
 // Base URL for the backend API
 const API_BASE_URL = 'http://localhost:3000/api';
 

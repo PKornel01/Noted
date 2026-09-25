@@ -6,6 +6,19 @@ const session = require('express-session')
 const path = require('path');
 require('dotenv').config();
 
+//DIAGNOSTICS
+process.on('exit', (code) => {
+    console.log('🛑 Process is exiting with code:', code);
+});
+
+process.on('uncaughtException', (err) => {
+    console.error('💥 Uncaught exception:', err);
+});
+
+process.on('unhandledRejection', (reason) => {
+    console.error('💥 Unhandled promise rejection:', reason);
+});
+
 const app = express();
 const PORT = process.env.Port || 3000;
 
@@ -72,6 +85,12 @@ app.post('/api/register', async (req, res) => {
             'INSERT INTO users (username, email, password, bio, title) VALUES (?, ?, ?, ?, ?)',
             [username || null, email, passwordHash, bio || null, title || null]
         );
+        const userId = result.insertId;
+
+        const [projectResult] = await connection.query(
+            'INSERT INTO projects (project_name) VALUES (?)',
+            [`${username || email}'s Project`]
+        );  
         const projectId = projectResult.insertId;
 
         await connection.query(
@@ -167,7 +186,7 @@ app.get('/api/boards', requireAuth, async (req, res) => {
         const projectId = projects[0].project_id;
 
         const [boards] = await connection.query(
-            'SELECT id, title, data, xPos, yPos FROM modules WHERE project_id = ? ORDER BY id DESC'
+            'SELECT id, title, data, xPos, yPos FROM modules WHERE project_id = ? ORDER BY id DESC',
             [projectId]
         );
         connection.release();
@@ -266,7 +285,7 @@ app.delete('/api/boards/:boardId', requireAuth, async (req, res) => {
 // ============================================
 
 // Get all boards from modules table
-app.get('/api/charts', async (req, res) => {
+app.get('/api/charts', requireAuth, async (req, res) => {
     try {
         const connection = await pool.getConnection();
         const [projects] = await connection.query(
@@ -280,7 +299,7 @@ app.get('/api/charts', async (req, res) => {
         const projectId = projects[0].project_id;
 
         const [charts] = await connection.query(
-            'SELECT id, title, data, xPos, yPos FROM modules WHERE project_id = ? ORDER BY id DESC'
+            'SELECT id, title, data, xPos, yPos FROM modules WHERE project_id = ? ORDER BY id DESC',
             [projectId]
         );
         connection.release();
@@ -419,9 +438,17 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-app.listen(PORT, () => {
-    console.log(`🚀 Kanban server running on http://localhost:${PORT}`);
+
+const server = app.listen(PORT, () => {
+    console.log(`🚀 Noted server running on http://localhost:${PORT}`);
     console.log(`📊 Database: ${process.env.DB_NAME || 'noted'}`);
-    console.log(`📦 Charts stored as modules with HTML in data field`);
     console.log(`✅ API endpoints ready`);
+});
+
+server.on('error', (err) => {
+    console.error('💥 Server error:', err);
+});
+
+server.on('close', () => {
+    console.log('🛑 Server closed');
 });

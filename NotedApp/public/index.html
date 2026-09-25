@@ -1,86 +1,239 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Noted! - Plan with Precision</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="landing.css">
+  <title>Noted! – Plan and create with precision</title>
+  
 </head>
 <body>
-    <div class="background-overlay"></div>
-
-    <nav class="glass-nav">
-        <div class="logo">☁️</div>
+<nav class="glass-nav">
+        <div class="nav-logo">Noted!</div>
         <div class="nav-links">
-            <a href="#">Projects</a>
-            <a href="#">Shared Projects</a>
-            <a href="#">Profile</a>
+            <a href="#">About us</a>
+            <a href="#">Our goal</a>
             <a href="#">Contact</a>
         </div>
         <div class="auth-buttons">
-            <button class="btn-signin">Sign in</button>
-            <button class="btn-register">Register</button>
+            <a href="signin.html"><button class="nav-btn-signin">Sign in</button></a>
+            <a href="register.html"><button class="nav-btn-register">Register</button></a>
         </div>
     </nav>
 
-    <div class = main>
-        <section class = upper-pannel>
-            <h1 class="title">Noted!</h1>
-            <p class="subtitle">Plan and create with precision</p>
-        
-        <img src="istockphoto-1433873104-1024x1024(1).png" id = "blob1">
-        <img src="istockphoto-1433873104-1024x1024(1).png" id = "blob2">
-        <div class = "note-anim">
-            <h3>Note</h3>
-            <p class = "line-1">With this app now everything</p> 
-            <p class = "line-2">is easier</p>
-            <p class = "line-3">My notes are cleaner</p>
-            <p class = "line-4">Its easy to use!</p>
-            <p class = "line-5">This cant be easier</p>
-            <p class = "line-6">And its free!</p>
-            
-
-
-        </div>
-
-        <section class="main-card-glass">
- 
-                <div class="text-block">
-                    <p>Organise your messy notes with us! We help organise and visualize notes.</p>
-                    <br>
-                    <p>With our powerful AI system you can make your notes short and essential.</p>
-                    <br>
-                    <p>Create tables and graphs for more visuals.</p>
-                    <br>
-                    <p>Having a lot of work? With our kanban board now you can plan better with</p> <p>an AI system that arranges your plans with one click.</p>
-
-                
-                </div>
-     
-                <button id = "dbutton">Download</button>
-            </div>
-        </section>
-        
-
-        <section class = lower-pannel>
-        <section class = "features-title"><h2>Features in our app</h2></section>
-        <section class="info-card">
-            
-            <div class="small-card glass">
-                <h3>Study Smarter, Work Together.</h3>
-                <p>Invite your friends or team to any note.<p>
-                <p>See instant updates, assign tasks, and build ideas together on a shared whiteboard.<p>
-                <p>Collaborative power real time</p>
-            </div>
-            <div class="small-card glass">
-                <h3>Your helping hand.</h3>
-                <p>Your intergrated AI learns your notes and helps to make your notes more clear and explains them so you can understand them better or even help in writing it to you.<p>
-                <p>Your note is shorter, your work is cleaner. </p>
-            </div>
-        </section>
-        </section>
+  <!-- ══ HERO ══ -->
+  <section class="hero">
+    <div class="hero-text">
+      <h1>Noted!</h1>
+      <h2>Plan and create with precision</h2>
+      <p>Organise your messy notes with us! We help organise and visualize notes.</p>
+      <p>With our powerful AI system you can make your notes short and essential.</p>
+      <p>Create tables and graphs for more visuals.</p>
+      <p>Having a lot of work? With our kanban board now you can plan better with an AI system that arranges your plans with one click.</p>
+      <a href="#" class="btn-download">Download</a>
     </div>
-    <script src="script.js"></script>
+
+    <div class="hero-visual">
+      <!-- scattered small note cards -->
+      <div class="h-note-sm hn1">
+        <div class="sm-lines">
+          <div class="sm-line" style="width:70px"></div>
+          <div class="sm-line" style="width:55px"></div>
+          <div class="sm-line" style="width:65px"></div>
+        </div>
+      </div>
+      <div class="h-note-sm hn2">
+        <div class="sm-lines">
+          <div class="sm-line" style="width:60px"></div>
+          <div class="sm-line" style="width:50px"></div>
+        </div>
+      </div>
+      <div class="h-note-sm hn3">
+        <div class="sm-lines">
+          <div class="sm-line" style="width:65px"></div>
+          <div class="sm-line" style="width:50px"></div>
+          <div class="sm-line" style="width:60px"></div>
+        </div>
+      </div>
+
+      <!-- pencils -->
+      <div class="h-pencil h-pencil-1"></div>
+      <div class="h-pencil h-pencil-2"></div>
+
+      <!-- gear -->
+      <div class="h-gear">⚙</div>
+
+      <!-- main note card -->
+      <div class="h-note h-note-main">
+        <div class="note-title"><span>☆</span> Note</div>
+        <p>With this app noting is this easy, Tow!<br>My note is nice and clean and I can even put images and tables here!</p>
+      </div>
+
+      <!-- mini chart card -->
+      <div class="h-note h-chart-card">
+        <div style="font-size:0.7rem;color:rgba(255,255,255,0.5);margin-bottom:4px;">Analytics</div>
+        <div class="mini-chart">
+          <div class="mini-bar" style="height:30%"></div>
+          <div class="mini-bar pink" style="height:55%"></div>
+          <div class="mini-bar blue" style="height:75%"></div>
+          <div class="mini-bar" style="height:45%"></div>
+          <div class="mini-bar pink" style="height:90%"></div>
+          <div class="mini-bar blue" style="height:60%"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ FEATURES ══ -->
+  <section class="features-section">
+    <h2 class="section-title">Features in our app</h2>
+    <div class="features-grid">
+
+      <!-- Card 1: Collaborate -->
+      <div class="feature-card" style="min-height:220px;">
+        <h3>Study Smarter, Work Together.</h3>
+        <p>Invite your friends or team to any note.</p>
+        <p>See instant updates, assign tasks, and build ideas on a shared whiteboard.</p>
+        <p>Collaborative power real time</p>
+        <div class="feat-collab-visual">
+          <div class="collab-board">
+            <div class="collab-block"></div>
+            <div class="collab-block" style="background:rgba(155,48,255,0.15)"></div>
+            <div class="collab-block" style="background:rgba(255,45,158,0.1)"></div>
+            <div class="collab-block"></div>
+          </div>
+          <div class="collab-icon">👥</div>
+        </div>
+      </div>
+
+      <!-- Card 2: AI -->
+      <div class="feature-card" style="min-height:220px; padding-right:200px;">
+        <h3>Your helping hand.</h3>
+        <p>Your integrated AI learns your notes and helps to make your notes more clear and explains them so you can understand them better or even help in writing it to you.</p>
+        <p>Your note is shorter, your work is cleaner.</p>
+        <div class="feat-ai-visual">
+          <div class="ai-card">
+            <div class="ai-label">AI</div>
+            <div class="ai-lines">
+              <div class="ai-line" style="width:120px"></div>
+              <div class="ai-line" style="width:90px"></div>
+              <div class="ai-line" style="width:110px"></div>
+              <div class="ai-line" style="width:70px"></div>
+            </div>
+          </div>
+          <div class="ai-bolt">⚡</div>
+        </div>
+      </div>
+
+      <!-- Card 3: Tables -->
+      <div class="feature-card" style="min-height:220px;">
+        <h3>Visualise with Tables &amp; Graphs</h3>
+        <p>Visualise your data with tables &amp; graphs, see measures on spreadsheet tables and graphs.</p>
+        <div class="mini-bars-sm">
+          <div class="mb" style="height:35px;background:linear-gradient(180deg,#c060ff,rgba(192,96,255,0.4))"></div>
+          <div class="mb" style="height:50px;background:linear-gradient(180deg,#ff40b8,rgba(255,64,184,0.4))"></div>
+          <div class="mb" style="height:28px;background:linear-gradient(180deg,#4090ff,rgba(64,144,255,0.4))"></div>
+          <div class="mb" style="height:42px;background:linear-gradient(180deg,#c060ff,rgba(192,96,255,0.4))"></div>
+          <div class="mb" style="height:20px;background:linear-gradient(180deg,#ff40b8,rgba(255,64,184,0.4))"></div>
+        </div>
+        <div class="feat-table-visual">
+          <div class="css-table">
+            <div class="css-table-row">
+              <div class="css-table-cell hdr"></div><div class="css-table-cell hdr"></div>
+              <div class="css-table-cell hdr"></div><div class="css-table-cell hdr"></div>
+            </div>
+            <div class="css-table-row">
+              <div class="css-table-cell"></div><div class="css-table-cell"></div>
+              <div class="css-table-cell"></div><div class="css-table-cell"></div>
+            </div>
+            <div class="css-table-row">
+              <div class="css-table-cell"></div><div class="css-table-cell"></div>
+              <div class="css-table-cell"></div><div class="css-table-cell"></div>
+            </div>
+            <div class="css-table-row">
+              <div class="css-table-cell"></div><div class="css-table-cell"></div>
+              <div class="css-table-cell"></div><div class="css-table-cell"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4: Kanban -->
+      <div class="feature-card" style="min-height:220px;">
+        <h3>Kanban for Everyone</h3>
+        <p>Your kanban board learns and adapts to every new complex task. Secure lecture, harmonic algorithms, and tasks about everything.</p>
+        <div class="feat-kanban-visual">
+          <div class="kanban-board">
+            <div class="kanban-col">
+              <div class="kanban-col-title">Tech</div>
+              <div class="kanban-card" style="background:rgba(155,48,255,0.4)"></div>
+              <div class="kanban-card" style="background:rgba(155,48,255,0.25)"></div>
+            </div>
+            <div class="kanban-col">
+              <div class="kanban-col-title">Kanban</div>
+              <div class="kanban-card" style="background:rgba(255,45,158,0.4)"></div>
+              <div class="kanban-card" style="background:rgba(255,45,158,0.25)"></div>
+              <div class="kanban-card" style="background:rgba(255,45,158,0.15)"></div>
+            </div>
+            <div class="kanban-col">
+              <div class="kanban-col-title">Nigh</div>
+              <div class="kanban-card" style="background:rgba(64,144,255,0.4)"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+
+
+  <!-- ══ FOOTER ══ -->
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <div class="footer-social">
+          <a href="#">𝕏</a>
+          <a href="#">📸</a>
+          <a href="#">▶</a>
+          <a href="#">in</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Use cases</h4>
+        <a href="#">UI design</a>
+        <a href="#">UX design</a>
+        <a href="#">Wireframing</a>
+        <a href="#">Diagramming</a>
+        <a href="#">Brainstorming</a>
+        <a href="#">Online whiteboard</a>
+        <a href="#">Team collaboration</a>
+      </div>
+      <div class="footer-col">
+        <h4>Explore</h4>
+        <a href="#">Design</a>
+        <a href="#">Prototyping</a>
+        <a href="#">Development features</a>
+        <a href="#">Design systems</a>
+        <a href="#">Collaboration features</a>
+        <a href="#">Design process</a>
+        <a href="#">FigJam</a>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <a href="#">Blog</a>
+        <a href="#">Best practices</a>
+        <a href="#">Colors</a>
+        <a href="#">Color wheel</a>
+        <a href="#">Support</a>
+        <a href="#">Developers</a>
+        <a href="#">Resource library</a>
+      </div>
+    </div>
+    <div class="footer-bottom">© 2025 Noted! All rights reserved.</div>
+  </footer>
+
 </body>
 </html>
