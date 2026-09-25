@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign In – Noted!</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+ 
+    body {
+      min-height: 100vh;
+      background-image: url("singin\ background.png");
+      background-size: cover;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    /* ── Main card ── */
+    main {
+      position: relative;
+      overflow: hidden;
+      justify-self: center;
+      z-index: 1;
+      display: flex;
+      width: 970px;
+      max-width: 95vw;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.07);
+      backdrop-filter: blur(15px) saturate(100%) brightness(1.2);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: 0 8px 60px rgba(0,0,0,0.5);
+    }
+
+    @media (max-width: 600px) {
+      main {
+        flex-direction: column;
+        width: 90vw;
+      }
+    }
+ 
+    /* ── Left panel – decorative illustration placeholder ── */
+    .panel-left {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 30px;
+      background: rgba(255,255,255,0.03);
+      border-right: 1px solid rgba(255,255,255,0.08);
+    }
+ 
+    /* Simple neon note illustration built with CSS */
+    .illustration {
+      position: relative;
+      width: 210px;
+      height: 240px;
+    }
+    .note {
+      position: absolute;
+      border-radius: 10px;
+      border: 2px solid;
+    }
+    .note-back {
+      width: 170px; height: 200px;
+      left: 30px; top: 30px;
+      background: rgba(200,180,255,0.08);
+      border-color: rgba(200,150,255,0.35);
+      transform: rotate(-5deg);
+    }
+    .note-front {
+      width: 170px; height: 200px;
+      left: 10px; top: 10px;
+      background: rgba(200,180,255,0.1);
+      border-color: rgba(200,150,255,0.45);
+    }
+    .note-lines {
+      position: absolute;
+      left: 30px; top: 50px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .note-line {
+      height: 4px;
+      border-radius: 2px;
+      background: linear-gradient(90deg, #ff4db8, #c060ff);
+    }
+    .note-line:nth-child(1) { width: 110px; }
+    .note-line:nth-child(2) { width: 90px; }
+    .note-line:nth-child(3) { width: 100px; }
+    .note-line:nth-child(4) { width: 80px; }
+    .note-line:nth-child(5) { width: 95px; }
+ 
+    .pencil {
+      position: absolute;
+      bottom: 10px; right: 5px;
+      width: 18px; height: 90px;
+      background: linear-gradient(180deg, #c060ff 0%, #7040c0 60%, #ff8050 80%, #ffe0c0 100%);
+      border-radius: 3px 3px 0 0;
+      transform: rotate(20deg);
+      box-shadow: 0 0 12px rgba(180,80,255,0.6);
+    }
+    .pencil-2 {
+      position: absolute;
+      bottom: 30px; left: 15px;
+      width: 16px; height: 80px;
+      background: linear-gradient(180deg, #8060e0 0%, #5030a0 60%, #ff7040 80%, #ffe0c0 100%);
+      border-radius: 3px 3px 0 0;
+      transform: rotate(-15deg);
+      box-shadow: 0 0 10px rgba(120,60,220,0.5);
+    }
+    .gear {
+      position: absolute;
+      right: 35px; bottom: 70px;
+      font-size: 38px;
+      color: rgba(180,140,255,0.55);
+      text-shadow: 0 0 14px rgba(180,100,255,0.5);
+    }
+ 
+    /* ── Right panel – form ── */
+    .panel-right {
+      flex: 1;
+      padding: 50px 44px;
+      display: flex;
+      flex-direction: column;
+    }
+ 
+    h1 {
+      font-size: 2.6rem;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.5px;
+      margin-bottom: 28px;
+      text-align: center;
+    }
+ 
+    .field-group {
+      margin-bottom: 20px;
+    }
+    .field-group label {
+      display: block;
+      color: #ffffff;
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+    }
+    .field-group input {
+      width: 100%;
+      background: transparent;
+      border: 2px solid #d63aa0;
+      border-radius: 30px;
+      padding: 12px 16px;
+      color: #ffffff;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+    .field-group input:focus {
+      border-color: #ff55cc;
+      box-shadow: 0 0 0 3px rgba(255,50,180,0.2);
+    }
+ 
+    .btn-signin {
+      width: 100%;
+      margin-top: 6px;
+      padding: 13px;
+      background: linear-gradient(90deg, #e0207a, #d63090);
+      border: none;
+      border-radius: 30px;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+
+    .btn-signin:hover {
+      opacity: 0.88;
+      transform: translateY(-1px);
+    }
+ 
+    .forgot {
+      display: block;
+      text-align: right;
+      color: #ffffff99;
+      font-size: 0.82rem;
+      margin-top: 10px;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    
+    .forgot:hover { color: #ff88cc; }
+ 
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 22px 0 18px;
+    }
+    .divider hr {
+      flex: 1;
+      border: none;
+      border-top: 1px solid rgba(255,255,255,0.2);
+    }
+    .divider span {
+      color: rgba(255,255,255,0.65);
+      font-size: 0.82rem;
+      white-space: nowrap;
+    }
+ 
+    .social-btns {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+    .social-btn {
+      width: 50px; height: 50px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      text-decoration: none;
+    }
+    .social-btn:hover {
+      background: rgba(255,255,255,0.15);
+      transform: scale(1.08);
+    }
+    .social-btn svg { width: 24px; height: 24px; }
+ 
+    .register-link {
+      text-align: center;
+      color: rgba(255,255,255,0.7);
+      font-size: 0.88rem;
+    }
+    .register-link a {
+      color: #ffffff;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .register-link a:hover { text-decoration: underline; }
+ 
+    /* ── Sponsor bar ── */
+    .sponsors {
+      position: relative;
+      z-index: 1;
+      margin-top: 48px;
+      display: flex;
+      gap: 52px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .sponsor {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: rgba(255,255,255,0.6);
+      font-size: 0.9rem;
+      font-weight: 500;
+      letter-spacing: 0.4px;
+    }
+    .sponsor svg { width: 28px; height: 28px; opacity: 0.7; }
+  </style>
+</head>
+<body>
+  <!-- Card -->
+  <main>
+    <!-- Left decorative panel -->
+    <div class="panel-left">
+      <div class="illustration">
+        <div class="note note-back"></div>
+        <div class="note note-front">
+          <div class="note-lines">
+            <div class="note-line"></div>
+            <div class="note-line"></div>
+            <div class="note-line"></div>
+            <div class="note-line"></div>
+            <div class="note-line"></div>
+          </div>
+        </div>
+        <div class="pencil"></div>
+        <div class="pencil-2"></div>
+        <div class="gear">⚙</div>
+      </div>
+    </div>
+ 
+    <!-- Right form panel -->
+    <div class="panel-right">
+      <h1>Sign In</h1>
+      
+      <form id="loginForm">
+        <div class="field-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" autocomplete="email" />
+        </div>
+ 
+        <div class="field-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" autocomplete="current-password" />
+        </div>
+
+        <button class="btn-signin" type="submit">Sign In</button>
+      </form>
+ 
+      
+      <a href="#" class="forgot">Forgot Password?</a>
+      <p>No account? <a href="/register.html">Register</a></p>
+ 
+      <div class="divider">
+        <hr /><span>Sign up with Google/GitHub</span><hr />
+      </div>
+ 
+      <div class="social-btns">
+        <!-- Google -->
+        <a href="#" class="social-btn">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#EA4335" d="M5.266 9.765A7.077 7.077 0 0 1 12 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3C17.782 1.145 15.055 0 12 0 7.27 0 3.198 2.698 1.24 6.65l4.026 3.115Z"/>
+            <path fill="#34A853" d="M16.04 18.013c-1.09.703-2.474 1.078-4.04 1.078a7.077 7.077 0 0 1-6.723-4.823l-4.04 3.067A11.965 11.965 0 0 0 12 24c2.933 0 5.735-1.043 7.834-3l-3.793-2.987Z"/>
+            <path fill="#4A90D9" d="M19.834 21c2.195-2.048 3.62-5.096 3.62-9 0-.71-.109-1.473-.272-2.182H12v4.637h6.436c-.317 1.559-1.17 2.766-2.395 3.558L19.834 21Z"/>
+            <path fill="#FBBC05" d="M5.277 14.268A7.12 7.12 0 0 1 4.909 12c0-.782.125-1.533.357-2.235L1.24 6.65A11.934 11.934 0 0 0 0 12c0 1.92.445 3.73 1.237 5.335l4.04-3.067Z"/>
+          </svg>
+        </a>
+        <!-- GitHub -->
+        <a href="#" class="social-btn">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#ffffff">
+            <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+          </svg>
+        </a>
+      </div>
+ 
+      <p class="register-link">
+        Don't have an account? Switch to <a href="/register">Register</a>
+      </p>
+    </div>
+  </main>
+ 
+  <!-- Sponsor bar -->
+  <div class="sponsors">
+    <div class="sponsor">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12,2 16,8 22,9 17,14 18,21 12,18 6,21 7,14 2,9 8,8"/></svg>
+      StatLab
+    </div>
+    <div class="sponsor">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+      3Light
+    </div>
+    <div class="sponsor">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M8 12h8M12 8l4 4-4 4"/></svg>
+      CreativeWorks
+    </div>
+    <div class="sponsor">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      GlobalSync
+    </div>
+  </div>
+ 
+  <script src="signin.js"></script>
+</body>
+</html>
