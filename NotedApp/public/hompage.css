@@ -45,6 +45,13 @@ body {
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
 }
 
+.avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
 .nav-links a {
     color: rgba(255, 255, 255, 0.7);
     text-decoration: none;
@@ -145,6 +152,12 @@ body {
     transform: translateY(-1px);
 }
 
+.projects-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
 #title{
     font-size: 2.6rem;
     left: 30px;
@@ -168,4 +181,54 @@ body {
     backdrop-filter: var(--card);
 }
 
+#projects-notice{
+    color: var(--muted);
+    text-align: center;
+    padding-top: 50px;
 
+}
+
+#create-btn{
+    display:flex;
+    align-items: center;
+    gap: 8px;
+    width: 44px;
+    height: 44px;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    color: var(--text);
+    overflow: hidden; /* ? */
+    white-space: nowrap; /* Tells the text not to jump to the second row no matter what. */
+    border-radius: 50px;
+    padding: 0; /* what 0 padding? */
+    cursor: pointer;
+    transition: width 0.3s ease, padding 0.3s ease; /* Tells what to do if given animation */
+    
+}
+
+#create-btn #plus-icon{
+    flex-shrink: 0; /* I still dont understand what does this one does */
+    width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem ;
+}
+
+#create-btn #create-text {
+    opacity: 0; /* Hide the text */
+    max-width: 0; /* Why? */
+    overflow: hidden;
+    white-space: nowrap; /* Why do we need to put this here again? */
+    transition: opacity 0.2s ease, max-width 0.3s ease;
+}
+
+#create-btn:hover {
+    width: 192px;
+    padding: 20px;
+}
+
+#create-btn:hover #create-text {
+    opacity: 1;
+    max-width: 120px;
+}
