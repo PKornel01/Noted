@@ -168,6 +168,84 @@ app.get('/api/me', requireAuth, async (req, res) => {
     }
 })
 
+//Project Endpoints
+
+app.get('/api/projects', requireAuth, async (req, res) => {
+    try {
+        const connection = await pool.getConnection();
+        const [projects] = await connection.query(
+            `SELECT p.id, p.project_name
+             FROM projects p
+             JOIN user_projects up ON up.project_id = p.id
+             WHERE up.user_id = ?
+             ORDER BY p.id DESC`,
+             [req.session.userId]
+        );
+        connection.release();
+        res.json(projects);
+    } catch (error) {
+        console.error('Error fetching projects:', error);
+        res.status(500).json({ error: 'Failed to fetch projects' });
+    }
+});
+
+app.post('/api/projects', requireAuth, async (req, res) => {
+    try {
+        const { projectName } = req.body;
+        if (!projectName || !projectName.trim()) {
+            return res.status(400).json({ error: 'Project name required'})
+        }
+
+        const connection = await pool.getConnection();
+        const [result] = await connection.query(
+            'INSERT INTO projects (project_name) VALUES (?)',
+            [projectName.trim()]
+        );
+        const projectId = result.insertId;
+
+        await connection.query(
+            'INSERT INTO user_projects (user_id, project_id) VALUES (?, ?)',
+            [req.session.userId, projectId]
+        );
+        connection.release();
+
+        res.json({ id: projectId, project_name: projectName.trim() });
+    } catch (error) {
+        console.error('Error creating project:', error);
+        res.status(500).json({ error: 'Failed to create project' })
+    }
+});
+
+app.put('/api/projects/:projectId', requireAuth, async (req, res) => {
+    try {
+        const { projectId } = req.params;
+        const { project_name } = req.body;
+        if (!project_name) {
+            return res.status(400).json({ error: 'Project name required'})
+        }
+
+        const connection = await pool.getConnection();
+
+        const [owned] = await connection.query(
+            'SELECT project_id FROM user_projects WHERE project_id = ? AND user_id = ?',
+            [projectId, req.session.userId]
+        );
+        if (owned.length === 0) {
+            connection.release();
+            return res.status(403).json({ error: 'Not authorized to rename this project'});
+        }
+
+        await connection.query('UPDATE projects SET project_name = ? WHERE id = ?', [project_name, projectId]);
+        connection.release();
+        res.json({ id: projectId, project_name });
+    } catch (error) {
+        console.error('Error renaming project:', error)
+        res.status(500).json({ error: 'Failed to rename project'})
+    }
+});
+
+
+
 // ============================================
 // Kanban Module ENDPOINTS
 // ============================================

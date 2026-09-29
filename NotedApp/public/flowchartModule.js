@@ -1,9 +1,11 @@
+/*
 (async function requireLogin() {
     const res = await fetch('/api/me');
-    if (!res.ok) window.location.href = '/login.html';
+    if (!res.ok) window.location.href = '/signin.html';
 })();
+*/
 // Base URL for the backend API
-const API_BASE_URL = 'http://localhost:3000/api';
+//const API_BASE_URL = 'http://localhost:3000/api';
 
 // ============================================
 // API HELPER FUNCTIONS
@@ -192,7 +194,7 @@ async function loadChartsFromDatabase() {
             </div>
             `;
 
-            container.appendChild(chartWrapper);
+            fcontainer.appendChild(chartWrapper);
 
             chartsData.set(domId, { persistentId: chart.id, title: chart.title });
             makeInteractive(chartWrapper);
@@ -202,8 +204,8 @@ async function loadChartsFromDatabase() {
 
 //------------------------------------------------------------
 
-const btn = document.getElementById('flowchartmaker');
-const container = document.getElementById('sheet');
+const fbtn = document.getElementById('flowchartmaker');
+const fcontainer = document.getElementById('sheet');
 
 const chartsData = new Map(); // chartId -> { persistentId: dbId }
 let containerCount = 0;
@@ -225,7 +227,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
 
-btn.addEventListener('click', async () => { 
+fbtn.addEventListener('click', async () => { 
     // Create a unique ID for this chart
     const chartId = 'chart-' + Date.now();
 
@@ -264,7 +266,7 @@ btn.addEventListener('click', async () => {
         </div>
     </div>
     `;
-    container.appendChild(chartWrapper);
+    fcontainer.appendChild(chartWrapper);
 
     chartsData.set(chartId, { title: 'Untitled Chart' });
     makeInteractive(chartWrapper);
@@ -326,7 +328,7 @@ function makeInteractive(chartWrapper) {
         const dy = e.clientY - startY;
 
         if (dragMode === 'move') { 
-            const bounds = container.getBoundingClientRect();
+            const bounds = fcontainer.getBoundingClientRect();
             const maxLeft = Math.max(0, bounds.width - chartWrapper.offsetWidth);
             const maxTop = Math.max(0, bounds.height - chartWrapper.offsetHeight);
             chartWrapper.style.left = Math.min(maxLeft, Math.max(0, startLeft + dx)) + 'px';
