@@ -25,7 +25,8 @@ body {
     position: relative;
     flex-direction: column;
     min-height: 100vh;
-      }
+}
+
 .glass-nav {
     z-index: 888;
     zoom: 107%;
@@ -45,6 +46,12 @@ body {
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
 }
 
+.nav-logo {
+    font-size: 17px;
+    font-weight:500;
+    cursor: pointer;
+}
+
 .avatar-img {
     width: 100%;
     height: 100%;
@@ -56,7 +63,7 @@ body {
     color: rgba(255, 255, 255, 0.7);
     text-decoration: none;
     margin: 0 15px;
-    font-size: 14px;
+    font-size: 14.6px;
 }
 
 .profile-wrapper {
@@ -106,6 +113,8 @@ body {
 
 }
 
+/*NavBar dropdown menu*/
+
 .dropdown-avatar img {
     width: 60px;
     height: 60px;
@@ -152,6 +161,8 @@ body {
     opacity: 0.88;
     transform: translateY(-1px);
 }
+
+/*Projects container*/
 
 .projects-header {
     display: flex;

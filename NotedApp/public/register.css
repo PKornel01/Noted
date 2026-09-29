@@ -4,6 +4,17 @@
   box-sizing: border-box;
 }
 
+:root {
+  --bg: linear-gradient(45deg, #1b0a36, #050D34);
+  --pink: #ff2d9e;
+  --purple: #9b30ff;
+  --blue: #4060ff;
+  --card: rgba(255, 255, 255, 0.06);
+  --card-border: rgba(255, 255, 255, 0.1);
+  --text: #ffffff;
+  --muted: rgba(255, 255, 255, 0.6);
+}
+
 body {
   min-height: 100vh;
   background-image: url("singin\ background.png");
@@ -14,6 +25,16 @@ body {
   align-items: center;
   justify-content: center;
   position: relative;
+}
+
+.noted-logo {
+  position: absolute;
+  color: var(--text);
+  font-size: 1.4rem;
+  font-weight: 700;
+  left: 25px;
+  top: 20px;
+  cursor: pointer;
 }
 
 /* ── Main card ── */
