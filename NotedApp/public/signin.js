@@ -1,4 +1,4 @@
-document.getElementById('LoginForm').addEventListener('submit', async (e) => {
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
@@ -10,7 +10,7 @@ document.getElementById('LoginForm').addEventListener('submit', async (e) => {
     });
 
     if (res.ok) {
-        window.location.href ='/'
+        window.location.href ='homepage.html'
     } else {
         const err = await res.json();
         alert(err.error || 'Login failed');

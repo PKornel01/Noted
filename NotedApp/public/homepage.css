@@ -244,3 +244,56 @@ body {
     opacity: 1;
     max-width: 120px;
 }
+
+#projects-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.project-box {
+    position: relative;
+    width: 200px;
+    height: 120px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    transition: box-shadow 0.15s, transform 0.15s;
+}
+
+.project-box:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.project-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    outline: none;
+    word-break: break-word;
+}
+
+.project-title[contenteditable="true"] {
+    outline: 1px dashed #5b8cff;
+    cursor: text;
+}
+
+.project-rename-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: #888;
+    padding: 2px 4px;
+    flex-shrink: 0;
+}
+
+.project-rename-btn:hover {
+    color: #5b8cff;
+}

@@ -1,13 +1,3 @@
-#sidebar {
-    width: 100px;
-    height: 800px;
-    background-color: #292626;
-    box-sizing: border-box;
-    position: fixed;
-    align-items: center;
-    z-index: 10;
-}
-
 #flowchartmaker {
     width: 60px;
     height: 60px;
@@ -17,15 +7,6 @@
     background-color: rgb(90, 90, 89);
     margin: 0 auto;
     margin-top: 20px;
-}
-
-#sheet {
-    margin-left: 120px;
-    padding: 20px;
-    position: relative;
-    min-height: 100vh;
-    height: 100vh;
-    overflow: hidden;
 }
 
 .chart {

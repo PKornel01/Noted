@@ -1,9 +1,11 @@
+/*
 (async function requireLogin() {
     const res = await fetch('/api/me');
-    if (!res.ok) window.location.href = '/login.html';
+    if (!res.ok) window.location.href = '/signin.html';
 })();
+*/
 // Base URL for the backend API
-const API_BASE_URL = 'http://localhost:3000/api';
+//const API_BASE_URL = 'http://localhost:3000/api';
 
 // ============================================
 // API HELPER FUNCTIONS
@@ -172,7 +174,7 @@ async function loadBoardsFromDatabase() {
                 </div>
             `;
 
-            container.appendChild(boardWrapper);
+            kanbanContainer.appendChild(boardWrapper);
 
             // Ensure any add-card buttons inside loaded HTML point to the
             // runtime DOM id for this board (domId). Persisted HTML may
@@ -235,8 +237,8 @@ async function loadBoardsFromDatabase() {
 //----------------------------------------------------------------------------------------------------------
 
 // Main controls in the page
-const btn = document.getElementById('kanbanmaker');
-const container = document.getElementById('sheet');
+const kbtn = document.getElementById('kanbanmaker');
+const kcontainer = document.getElementById('sheet');
 
 // Runtime in-memory store for boards and cards.
 // Key: DOM id like 'board-123' -> value: { cards: Map(column->Array), title, persistentId }
@@ -259,7 +261,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // Create a new board when the "kanbanmaker" button is clicked
-btn.addEventListener('click', async () => {
+kbtn.addEventListener('click', async () => {
     // Create a unique ID for this board
     const boardId = 'board-' + Date.now();
 
@@ -303,7 +305,7 @@ btn.addEventListener('click', async () => {
         </div>
     `;
 
-    container.appendChild(boardWrapper);
+    kcontainer.appendChild(boardWrapper);
 
     // Initialize board data storage
     boardsData.set(boardId, {

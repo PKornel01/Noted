@@ -33,7 +33,7 @@
     <div class="panel-right">
       <h1>Register</h1>
       
-      <form id="loginForm">
+      <form id="registerForm">
 
         <div class="field-group">
           <label for="username">Username</label>
@@ -52,9 +52,10 @@
 
         <div class="field-group">
           <label for="confirm-password">Confirm Password</label>
-          <input type="password" id="confirm-password" name="confirm-password" autocomplete="current-password" />
+          <input type="password" id="confirm-password" name="confirm-password" />
         </div>
 
+        <span id="passwordDoesntMatch"></span>
         <button class="btn-register" type="submit">Register</button>
       </form>
     
@@ -106,6 +107,6 @@
     </div>
   </div>
  
-  <script src="signin.js"></script>
+  <script src="register.js"></script>
 </body>
 </html>
