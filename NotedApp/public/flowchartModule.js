@@ -27,7 +27,7 @@ async function checkAPIHealth() {
 // Returns an array of chart objects or [] on error.
 async function fetchChartsFromAPI() {
     try {
-        const response = await fetch(`${API_BASE_URL}/charts`);
+        const response = await fetch(`${API_BASE_URL}/charts?projectId=${projectId}`);
         if (!response.ok) throw new Error('Failed to fetch charts');
         return await response.json();
     } catch (error) {
@@ -38,7 +38,7 @@ async function fetchChartsFromAPI() {
 
 // Create a new chart row in the DB via POST
 // Returns the created row (including insert id) or null on failure.
-async function createChartAPI(title, projectId = 1, data = '', xPos = 0, yPos = 0) {
+async function createChartAPI(title, projectId, data = '', xPos = 0, yPos = 0) {
     try {
         const response = await fetch(`${API_BASE_URL}/charts`, {
             method: 'POST',
@@ -111,7 +111,7 @@ async function persistChartToDB(chartElement) {
     // If this chart does not yet have a DB id, create it first
     let dbId = meta.persistentId;
     if (!dbId) {
-        const created = await createChartAPI(title, 1, chartHTML, xPos, yPos);
+        const created = await createChartAPI(title, projectId, chartHTML, xPos, yPos);
         if (created && created.id) {
             dbId = created.id;
             // store persistent id for future saves
@@ -178,15 +178,7 @@ async function loadChartsFromDatabase() {
                     </section>
                 </div>
                 <div class="chart-body">
-                    ${chart.data || `
-                        <svg class="connections-layer">
-                            <defs> 
-                                <marker id ="arrowhead" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
-                                    <path d="M0,0 L0,6 L9,3 z" fill="#5b8cff" />
-                                </marker>
-                            </defs>
-                        </svg>
-                    `}
+                    ${bodyContent}
                 </div>
                 <div class="resize-handle">
         
@@ -205,7 +197,7 @@ async function loadChartsFromDatabase() {
 //------------------------------------------------------------
 
 const fbtn = document.getElementById('flowchartmaker');
-const fcontainer = document.getElementById('sheet');
+const fcontainer = document.getElementById('flowchart-canvas');
 
 const chartsData = new Map(); // chartId -> { persistentId: dbId }
 let containerCount = 0;
@@ -328,16 +320,35 @@ function makeInteractive(chartWrapper) {
         const dy = e.clientY - startY;
 
         if (dragMode === 'move') { 
-            const bounds = fcontainer.getBoundingClientRect();
+            /*
+            const bounds = sheetEl.getBoundingClientRect();
             const maxLeft = Math.max(0, bounds.width - chartWrapper.offsetWidth);
             const maxTop = Math.max(0, bounds.height - chartWrapper.offsetHeight);
             chartWrapper.style.left = Math.min(maxLeft, Math.max(0, startLeft + dx)) + 'px';
             chartWrapper.style.top = Math.min(maxTop, Math.max(0, startTop + dy)) + 'px';
+            */
 
+            const newLeft = Math.max(0, startLeft + dx);
+            const newTop = Math.max(0, startTop + dy);
+
+            chartWrapper.style.left = newLeft + 'px';
+            chartWrapper.style.top = newTop + 'px';
+
+            growCanvasIfNeeded(fcontainer, newLeft + chartWrapper.offsetWidth, newTop + chartWrapper.offsetHeight);
         }
         else if (dragMode === 'resize') { 
+            /*
             chartWrapper.style.width = Math.max(Min_Width, startWidth + dx) + 'px';
             chartWrapper.style.height = Math.max(Min_Height, startHeight + dy) + 'px';
+            */
+
+            const newWidth = Math.max(Min_Width, startWidth + dx);
+            const newHeight = Math.max(Min_Height, startHeight + dy);
+
+            chartWrapper.style.width = newWidth + 'px';
+            chartWrapper.style.height = newHeight + 'px'
+
+            growCanvasIfNeeded(fcontainer, chartWrapper.offsetLeft + newWidth, chartWrapper.offsetTop + newHeight);
         };
     };
 
@@ -667,6 +678,9 @@ function makeInteractive(chartWrapper) {
     function rehydrateExistingContent() {
     // Re-wire any shapes that came from saved HTML — does nothing
     // for a freshly created, empty chart, so it's safe to always call.
+    if (!svg) {
+        return;
+    }
     const existingShapes = workspace.querySelectorAll('[class^="shp"]');
     let maxId = 0;
 
@@ -735,6 +749,7 @@ async function deleteChartFromUI(chartDomId) {
     }
 }
 
+/*
 async function deleteShape(chartId) {
     // Remove from data
     const cards = chartsData.get(chartId).shape.get();
@@ -753,3 +768,4 @@ async function deleteShape(chartId) {
     const chartElement = document.getElementById(chartId);
     await persistBoardToDB(chartElement);
 }
+*/

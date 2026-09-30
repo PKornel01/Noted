@@ -27,7 +27,7 @@ async function checkAPIHealth() {
 // Returns an array of board rows or [] on error.
 async function fetchBoardsFromAPI() {
     try {
-        const response = await fetch(`${API_BASE_URL}/boards`);
+        const response = await fetch(`${API_BASE_URL}/boards?projectId=${projectId}`);
         if (!response.ok) throw new Error('Failed to fetch boards');
         return await response.json();
     } catch (error) {
@@ -38,7 +38,7 @@ async function fetchBoardsFromAPI() {
 
 // Create a new board row in the DB via POST
 // Returns the created row (including insert id) or null on failure.
-async function createBoardAPI(title, projectId = 1, data = '', xPos = 0, yPos = 0) {
+async function createBoardAPI(title, projectId, data = '', xPos = 0, yPos = 0) {
     try {
         const response = await fetch(`${API_BASE_URL}/boards`, {
             method: 'POST',
@@ -106,7 +106,7 @@ async function persistBoardToDB(boardElement) {
     // If this board does not yet have a DB id, create it first
     let dbId = meta.persistentId;
     if (!dbId) {
-        const created = await createBoardAPI(title, 1, boardHTML, xPos, yPos);
+        const created = await createBoardAPI(title, projectId, boardHTML, xPos, yPos);
         if (created && created.id) {
             dbId = created.id;
             // store persistent id for future saves
@@ -174,7 +174,7 @@ async function loadBoardsFromDatabase() {
                 </div>
             `;
 
-            kanbanContainer.appendChild(boardWrapper);
+            kcontainer.appendChild(boardWrapper);
 
             // Ensure any add-card buttons inside loaded HTML point to the
             // runtime DOM id for this board (domId). Persisted HTML may
@@ -238,7 +238,7 @@ async function loadBoardsFromDatabase() {
 
 // Main controls in the page
 const kbtn = document.getElementById('kanbanmaker');
-const kcontainer = document.getElementById('sheet');
+const kcontainer = document.getElementById('kanban-canvas');
 
 // Runtime in-memory store for boards and cards.
 // Key: DOM id like 'board-123' -> value: { cards: Map(column->Array), title, persistentId }
@@ -894,8 +894,14 @@ function makeElementMovable(elmnt) {
     pos3 = e.clientX;
     pos4 = e.clientY;
     // Set the element's new position
-    elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-    elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+
+    const newTop = Math.max(0, elmnt.offsetTop - pos2);
+    const newLeft = Math.max(0, elmnt.offsetLeft - pos1);
+
+    elmnt.style.top = newTop + "px";
+    elmnt.style.left = newLeft + "px";
+
+    growCanvasIfNeeded(kcontainer, newLeft + elmnt.offsetWidth, newTop + elmnt.offsetHeight);
 
   }
 

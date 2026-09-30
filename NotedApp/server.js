@@ -191,15 +191,15 @@ app.get('/api/projects', requireAuth, async (req, res) => {
 
 app.post('/api/projects', requireAuth, async (req, res) => {
     try {
-        const { projectName } = req.body;
-        if (!projectName || !projectName.trim()) {
+        const { project_name } = req.body;
+        if (!project_name || !project_name.trim()) {
             return res.status(400).json({ error: 'Project name required'})
         }
 
         const connection = await pool.getConnection();
         const [result] = await connection.query(
             'INSERT INTO projects (project_name) VALUES (?)',
-            [projectName.trim()]
+            [project_name.trim()]
         );
         const projectId = result.insertId;
 
@@ -209,7 +209,7 @@ app.post('/api/projects', requireAuth, async (req, res) => {
         );
         connection.release();
 
-        res.json({ id: projectId, project_name: projectName.trim() });
+        res.json({ id: projectId, project_name: project_name.trim() });
     } catch (error) {
         console.error('Error creating project:', error);
         res.status(500).json({ error: 'Failed to create project' })
@@ -252,19 +252,23 @@ app.put('/api/projects/:projectId', requireAuth, async (req, res) => {
 
 app.get('/api/boards', requireAuth, async (req, res) => {
     try {
-        const connection = await pool.getConnection();
-        const [projects] = await connection.query(
-            'SELECT project_id FROM user_projects WHERE user_id = ? LIMIT 1',
-            [req.session.userId]
-        );
-        if (projects.length === 0) {
-            connection.release();
-            return res.json([]);
+        const projectId = req.query.projectId
+        if (!projectId) {
+            return res.status(400).json({ error: 'projectId is required' })
         }
-        const projectId = projects[0].project_id;
+        const connection = await pool.getConnection();
+        const [owned] = await connection.query(
+            'SELECT project_id FROM user_projects WHERE project_id = ? AND user_id = ?'
+            [projectId, req.session.userId]
+        );
+        
+        if (owned.length === 0) {
+            connection.release();
+            return res.status(403).json({ error: 'Not authorized to view this project' });
+        }
 
         const [boards] = await connection.query(
-            'SELECT id, title, data, xPos, yPos FROM modules WHERE project_id = ? ORDER BY id DESC',
+            "SELECT id, title, data, xPos, yPos FROM modules WHERE project_id = ? AND module_type = 'kanban' ORDER BY id DESC",
             [projectId]
         );
         connection.release();
@@ -277,22 +281,27 @@ app.get('/api/boards', requireAuth, async (req, res) => {
 
 app.post('/api/boards', requireAuth, async (req, res) => {
     try {
-        const { title, data = '', xPos = 0, yPos = 0 } = req.body;
-        if (!title) return res.status(400).json({ error: 'Board title required' });
+        const { title, data = '', xPos = 0, yPos = 0, projectId } = req.body;
+        if (!title) {
+            return res.status(400).json({ error: 'Board title required' });
+        }
+        if (!projectId) {
+            return res.status(400).json({ error: 'projectId required' });
+        }
 
         const connection = await pool.getConnection();
-        const [projects] = await connection.query(
-            'SELECT project_id FROM user_projects WHERE user_id = ? LIMIT 1',
-            [req.session.userId]
+        const [owned] = await connection.query(
+            'SELECT project_id FROM user_projects WHERE project_id = ? AND user_id = ?',
+            [projectId, req.session.userId]
         );
-        if (projects.length === 0) {
+        if (owned.length === 0) {
             connection.release();
-            return res.status(400).json({ error: 'No project found for this user' })
+            return res.status(400).json({ error: 'Not authorized to add to this project' })
         }
-        const projectId = projects[0].project_id;
+        
 
         const [result] = await connection.query(
-            'INSERT INTO modules (project_id, title, data, xPos, yPos) VALUES (?, ?, ?, ?, ?)',
+            "INSERT INTO modules (project_id, title, data, xPos, yPos, module_type) VALUES (?, ?, ?, ?, ?, 'kanban')",
             [projectId, title, data, xPos, yPos]
         );
         connection.release();
@@ -365,19 +374,24 @@ app.delete('/api/boards/:boardId', requireAuth, async (req, res) => {
 // Get all boards from modules table
 app.get('/api/charts', requireAuth, async (req, res) => {
     try {
-        const connection = await pool.getConnection();
-        const [projects] = await connection.query(
-            'SELECT project_id FROM user_projects WHERE user_id = ? LIMIT 1',
-            [req.session.userId]
-        );
-        if (projects.length === 0) {
-            connection.release();
-            return res.json([]);
+        const projectId = req.query.projectId;
+        if (!projectId) {
+            return res.status(400).json({ error: 'projectId is required' });
         }
-        const projectId = projects[0].project_id;
+
+        const connection = await pool.getConnection();
+
+        const [owned] = await connection.query(
+            'SELECT project_id FROM user_projects WHERE project_id = ? AND user_id = ?',
+            [projectId, req.session.userId]
+        );
+        if (owned.length === 0) {
+            connection.release();
+            return res.status(403).json({ error: 'Not authorized to view this project'});
+        }
 
         const [charts] = await connection.query(
-            'SELECT id, title, data, xPos, yPos FROM modules WHERE project_id = ? ORDER BY id DESC',
+            "SELECT id, title, data, xPos, yPos FROM modules WHERE project_id = ? AND module_type = 'flowchart' ORDER BY id DESC",
             [projectId]
         );
         connection.release();
@@ -391,37 +405,30 @@ app.get('/api/charts', requireAuth, async (req, res) => {
 // Create a new chart (module)
 app.post('/api/charts', requireAuth, async (req, res) => {
     try {
-        const { title, data = '', xPos = 0, yPos = 0 } = req.body;
+        const { title, data = '', xPos = 0, yPos = 0, projectId } = req.body;
         if (!title) {
             return res.status(400).json({ error: 'Chart title required' });
         }
+        if (!projectId) {
+            return res.status(400).json({ error: 'projectId is required' });
+        }
 
         const connection = await pool.getConnection();
-        const [projects] = await connection.query(
-            'SELECT project_id FROM user_projects WHERE user_id = ? LIMIT 1',
-            [req.session.userId]
+        const [owned] = await connection.query(
+            'SELECT project_id FROM user_projects WHERE project_id = ? AND user_id = ?',
+            [projectId, req.session.userId]
         );
-        if (projects.length === 0) {
+        if (owned.length === 0) {
             connection.release();
-            return res.status(400).json({ error: 'No project found for this user' });
+            return res.status(403).json({ error: 'Not authorized to add to this project' });
         }
-        const projectId = projects[0].project_id;
         
         const [result] = await connection.query(
-            'INSERT INTO modules (project_id, title, data, xPos, yPos) VALUES (?, ?, ?, ?, ?)',
+            "INSERT INTO modules (project_id, title, data, xPos, yPos, module_type) VALUES (?, ?, ?, ?, ?, 'flowchart')",
             [projectId, title, data, xPos, yPos]
         );
-        
         connection.release();
-        const chartId = result.insertId;
-        
-        res.json({ 
-            id: chartId, 
-            title: title, 
-            data: data,
-            xPos: xPos,
-            yPos: yPos
-        });
+        res.json({ id: result.insertId, title, data, xPos, yPos });
     } catch (error) {
         console.error('Error creating chart:', error);
         res.status(500).json({ error: 'Failed to create chart' });
