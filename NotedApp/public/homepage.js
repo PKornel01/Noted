@@ -62,7 +62,7 @@ function createProjectBox(project) {
     box.appendChild(renameBtn);
 
     box.addEventListener('click', () => {
-        window.location.href = 'workspace.html'
+        window.location.href = `workspace.html?id=${project.id}`
     });
 
     renameBtn.addEventListener('click', (e) => {
@@ -147,5 +147,11 @@ function setAvatar(url) {
 }
 
 setAvatar(userAvatarUrl);
+
+const logoutBtn = document.getElementById('logoutBtn');
+logoutBtn.addEventListener('click', async () => {
+    await fetch('/api/logout', {method: 'POST' });
+    window.location.href = '/signin.html';
+});
 
 initHomepage();

@@ -238,7 +238,7 @@ async function loadBoardsFromDatabase() {
 
 // Main controls in the page
 const kbtn = document.getElementById('kanbanmaker');
-const kcontainer = document.getElementById('kanban-canvas');
+const kcontainer = document.getElementById('shared-canvas');
 
 // Runtime in-memory store for boards and cards.
 // Key: DOM id like 'board-123' -> value: { cards: Map(column->Array), title, persistentId }

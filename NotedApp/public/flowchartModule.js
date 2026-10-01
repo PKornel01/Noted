@@ -197,7 +197,7 @@ async function loadChartsFromDatabase() {
 //------------------------------------------------------------
 
 const fbtn = document.getElementById('flowchartmaker');
-const fcontainer = document.getElementById('flowchart-canvas');
+const fcontainer = document.getElementById('shared-canvas');
 
 const chartsData = new Map(); // chartId -> { persistentId: dbId }
 let containerCount = 0;

@@ -258,7 +258,7 @@ app.get('/api/boards', requireAuth, async (req, res) => {
         }
         const connection = await pool.getConnection();
         const [owned] = await connection.query(
-            'SELECT project_id FROM user_projects WHERE project_id = ? AND user_id = ?'
+            'SELECT project_id FROM user_projects WHERE project_id = ? AND user_id = ?',
             [projectId, req.session.userId]
         );
         
