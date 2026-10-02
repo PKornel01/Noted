@@ -199,29 +199,34 @@ body {
     gap: 16px;
 }
 
+
+
+/* ---- */
+
 /*Scrollbar customization*/
 
-#projects-container {
-    scrollbar-color: var(--purple) rgba(255,255,255,0.05);
-}
-
 #projects-container::-webkit-scrollbar {
-    width: 8px;
-    
+    width: 15px; 
 }
 
 #projects-container::-webkit-scrollbar-track {
+    margin: 22px 0;
     background: rgba(255, 255, 255, 0.05);
+    border-left: 3px solid transparent;
+    background-clip: padding-box;
     border-radius: 10px;
 }
 
 #projects-container::-webkit-scrollbar-thumb {
     background: var(--purple);
+    border: 3px solid transparent;
+    background-clip: padding-box;
     border-radius: 10px;
 }
 
 #projects-container::-webkit-scrollbar-thumb:hover {
     background: var(--pink);
+    background-clip: padding-box;
 }
 
 /* ---- */
@@ -323,6 +328,20 @@ body {
     color: #888;
     padding: 2px 4px;
     flex-shrink: 0;
+}
+
+.project-delete-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: #888;
+    padding: 2px 4px;
+    flex-shrink: 0;
+}
+
+.project-delete-btn:hover {
+    color: #e0207a;
 }
 
 .project-rename-btn:hover {

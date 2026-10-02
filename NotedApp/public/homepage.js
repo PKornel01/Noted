@@ -61,6 +61,34 @@ function createProjectBox(project) {
     renameBtn.title = 'Rename';
     box.appendChild(renameBtn);
 
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'project-delete-btn';
+    deleteBtn.type = 'button';
+    deleteBtn.textContent = '🗑';
+    deleteBtn.title = 'Delete';
+    box.appendChild(deleteBtn);
+
+    deleteBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+
+        const confirmed = confirm(`Delete "${title.textContent}"? This can't be undone.`);
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/projects/${project.id}`, {
+                method: 'DELETE'
+            });
+            if (!res.ok) {
+                throw new Error('Failed to delete project');
+            }
+            await loadProjects();
+        } catch (error) {
+            console.error('Error deleteing project:', error);
+        }
+    });
+
     box.addEventListener('click', () => {
         window.location.href = `workspace.html?id=${project.id}`
     });
@@ -134,6 +162,32 @@ profileBtn.addEventListener('click', () => {
 document.addEventListener('click', (e) => {
     if (!profileBtn.contains(e.target) && !dropdown.contains(e.target)) {
         dropdown.classList.remove('open');
+    }
+});
+
+const nameInput = document.getElementById( 'nameInput' );
+nameInput.addEventListener('blur', async () => {
+    const newName = nameInput.value.trim();
+    if (!newName) return;
+
+    try {
+        const res = await fetch('/api/me', {
+            method: 'PUT',
+            headers: { 'Content-Type' : 'application/json' },
+            body: JSON.stringify({ username: newName })
+        });
+        if (!res.ok) {
+            throw new Error('Failed to update username');
+        }
+    } catch (error) {
+        console.error( 'Error updating username:', error);
+    }
+});
+
+nameInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        nameInput.blur();
     }
 });
 

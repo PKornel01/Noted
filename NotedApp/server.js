@@ -166,7 +166,28 @@ app.get('/api/me', requireAuth, async (req, res) => {
         console.error('Error fetching current user:', error);
         res.status(500).json({ error: 'Failed to fetch user' });
     }
-})
+});
+
+app.put('/api/me', requireAuth, async (req, res) => {
+    try {
+        const { username } = req.body;
+        if (!username || !username.trim()) {
+            return res.status(400).json({ error: 'Username required' });
+        }
+
+        const connection = await pool.getConnection();
+        await connection.query(
+            'UPDATE users SET username = ? WHERE id = ?',
+            [username.trim(), req.session.userId]
+        );
+        connection.release();
+
+        res.json({ username: username.trim() });
+    } catch (error) {
+        console.error( 'Error updating username:', error);
+        res.status(500).json({ error: 'Failed to update username' });
+    }
+});
 
 //Project Endpoints
 
@@ -241,6 +262,32 @@ app.put('/api/projects/:projectId', requireAuth, async (req, res) => {
     } catch (error) {
         console.error('Error renaming project:', error)
         res.status(500).json({ error: 'Failed to rename project'})
+    }
+});
+
+app.delete('/api/projects/:projectId' , requireAuth, async (req, res) => {
+    try {
+        const { projectId } = req.params;
+        const connection = await pool.getConnection();
+
+        const [owned] = await connection.query(
+            'SELECT project_id FROM user_projects WHERE project_id = ? AND user_id = ?',
+            [projectId, req.session.userId]
+        );
+        if (owned.length === 0) {
+            connection.release();
+            return res.status(403).json({error: 'Not authorized to delete this project'});
+        }
+
+        await connection.query('DELETE FROM modules WHERE project_id= ?', [projectId]);
+        await connection.query('DELETE FROM user_projects WHERE project_id= ?', [projectId]);
+        await connection.query('DELETE FROM projects WHERE id= ?', [projectId]);
+
+        connection.release();
+        res.json({ success: true, id: projectId });
+    } catch (error) {
+        console.error('Error deleting project:', error);
+        res.status(500).json({ error: 'Failed to delete project' });
     }
 });
 
