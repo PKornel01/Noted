@@ -297,7 +297,6 @@ body {
     border-radius: 15px;
     padding: 12px;
     cursor: pointer;
-    display: flex;
     align-items: flex-start;
     justify-content: space-between;
     transition: box-shadow 0.15s, transform 0.15s;
@@ -338,6 +337,7 @@ body {
     color: #888;
     padding: 2px 4px;
     flex-shrink: 0;
+    
 }
 
 .project-delete-btn:hover {

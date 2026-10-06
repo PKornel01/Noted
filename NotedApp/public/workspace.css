@@ -4,6 +4,17 @@
     box-sizing: border-box;
 }
 
+:root {
+    --bg: linear-gradient(45deg, #1b0a36, #050D34);
+    --pink: #ff2d9e;
+    --purple: #9b30ff;
+    --blue: #4060ff;
+    --card: rgba(255, 255, 255, 0.06);
+    --card-border: rgba(255, 255, 255, 0.1);
+    --text: #ffffff;
+    --muted: rgba(255, 255, 255, 0.6);
+}
+
 body{
     background-image:url(workspace-bg.png);
     background-size: cover;
@@ -12,7 +23,6 @@ body{
     flex-direction: column;
     min-height: 100vh;
 }
-
 
 #sidebar {
     width: 100px;
@@ -58,10 +68,13 @@ body{
 
 .module-pane {
     position: relative;      
-    height: 500px;
+    height: 900px;
     overflow: auto;
-    border: 1px dashed #ccc;
-    border-radius: 8px;
+    background: rgba(255,255,255,0.07);
+    backdrop-filter: blur(15px) saturate(100%) brightness(1.2);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1.7px solid var(--card-border);
+    border-radius: 15px;
     padding: 12px;
 }
 

@@ -788,18 +788,18 @@ function attachColumnDropListeners(boardId) {
 function handleDragOver(e) {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
-    this.style.backgroundColor = '#d0e8f2'; // Highlight on drag over
+    this.style.backgroundColor = '#d0e8f241'; // Highlight on drag over
 }
 
 // Reset column background when drag leaves
 function handleDragLeave(e) {
-    this.style.backgroundColor = '#e8e8e8'; // Reset color when leaving
+    this.style.backgroundColor = '#d0d0d021'; // Reset color when leaving
 }
 
 // Handle card drop into a column: move data in `boardsData`, re-render
 function handleCardDrop(e) {
     e.preventDefault();
-    this.style.backgroundColor = '#e8e8e8'; // Reset color
+    this.style.backgroundColor = '#d0d0d021'; // Reset color
 
     if (!draggedCard) return;
 
