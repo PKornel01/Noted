@@ -170,12 +170,10 @@ async function loadChartsFromDatabase() {
             
             chartWrapper.innerHTML = `
             <div class="chart">
-                <div class="chart-header">
-                    <section id="btnContainer"> 
+                <div class="chartHandle">
                         <button class="headerBtn" id="obj-btn" type="button" title="Add Object">+</button>
                         <button class="headerBtn" id="connectBtn" type="button" title="Connect">[🔗 Connect: Off]</button>
                         <button class="headerBtn" id="close-btn" type="button" title="Remove">🗑</button>
-                    </section>
                 </div>
                 <div class="chart-body">
                     ${bodyContent}
@@ -237,12 +235,10 @@ fbtn.addEventListener('click', async () => {
     // Create the chart element
     chartWrapper.innerHTML = `
     <div class="chart">
-        <div class="chart-header">
-            <section id="btnContainer"> 
+        <div class="chartHandle">
                 <button class="headerBtn" id="obj-btn" type="button" title="Add Object">+</button>
                 <button class="headerBtn" id="connectBtn" type="button" title="Connect">[🔗 Connect: Off]</button>
                 <button class="headerBtn" id="close-btn" type="button" title="Remove">🗑</button>
-            </section>
         </div>
         <div class="chart-body">
             <svg class="connections-layer">
@@ -266,7 +262,7 @@ fbtn.addEventListener('click', async () => {
 });
 
 function makeInteractive(chartWrapper) { 
-    const header = chartWrapper.querySelector('.chart-header');
+    const header = chartWrapper.querySelector('.chartHandle');
     const handle = chartWrapper.querySelector('.resize-handle');
     const closeBtn = chartWrapper.querySelector('#close-btn');
     const objBtn = chartWrapper.querySelector('#obj-btn');

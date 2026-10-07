@@ -44,10 +44,9 @@
     height: 200px;
 }
 
-.chart-header {
+.chartHandle {
     height: 50px;
     align-items: center;
-    justify-content: space-between;
     cursor: move;
     touch-action: none;
     padding:10px 10px 10px;
@@ -56,12 +55,8 @@
     color: var(--text);
     user-select: none;
     background-color:#37166388;
-}
-
-#btnContainer {
     display: flex;
     gap: 4px;
-    padding: 2px;
 }
 
 .headerBtn {
