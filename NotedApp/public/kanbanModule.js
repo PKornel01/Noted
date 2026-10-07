@@ -793,13 +793,13 @@ function handleDragOver(e) {
 
 // Reset column background when drag leaves
 function handleDragLeave(e) {
-    this.style.backgroundColor = '#d0d0d021'; // Reset color when leaving
+    this.style.backgroundColor = '#d0d0d000'; // Reset color when leaving
 }
 
 // Handle card drop into a column: move data in `boardsData`, re-render
 function handleCardDrop(e) {
     e.preventDefault();
-    this.style.backgroundColor = '#d0d0d021'; // Reset color
+    this.style.backgroundColor = '#d0d0d000'; // Reset color
 
     if (!draggedCard) return;
 

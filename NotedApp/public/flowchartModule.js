@@ -172,9 +172,9 @@ async function loadChartsFromDatabase() {
             <div class="chart">
                 <div class="chart-header">
                     <section id="btnContainer"> 
-                        <button class="headerBtn" id="obj-btn" type="button" title="Add Object">[+]</button>
+                        <button class="headerBtn" id="obj-btn" type="button" title="Add Object">+</button>
                         <button class="headerBtn" id="connectBtn" type="button" title="Connect">[🔗 Connect: Off]</button>
-                        <button class="headerBtn" id="close-btn" type="button" title="Remove">[x]</button>
+                        <button class="headerBtn" id="close-btn" type="button" title="Remove">🗑</button>
                     </section>
                 </div>
                 <div class="chart-body">
@@ -239,9 +239,9 @@ fbtn.addEventListener('click', async () => {
     <div class="chart">
         <div class="chart-header">
             <section id="btnContainer"> 
-                <button class="headerBtn" id="obj-btn" type="button" title="Add Object">[+]</button>
+                <button class="headerBtn" id="obj-btn" type="button" title="Add Object">+</button>
                 <button class="headerBtn" id="connectBtn" type="button" title="Connect">[🔗 Connect: Off]</button>
-                <button class="headerBtn" id="close-btn" type="button" title="Remove">[x]</button>
+                <button class="headerBtn" id="close-btn" type="button" title="Remove">🗑</button>
             </section>
         </div>
         <div class="chart-body">
