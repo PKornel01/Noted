@@ -161,7 +161,7 @@ async function loadChartsFromDatabase() {
                     <svg class="connections-layer">
                         <defs> 
                             <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
-                                <path d="M0,0 L0,6 L9,3 z" fill="#5b8cff" />
+                                <path d="M0,0 L0,6 L9,3 z" fill="#d035ff" />
                             </marker>
                         </defs>
                     </svg>
@@ -171,8 +171,8 @@ async function loadChartsFromDatabase() {
             chartWrapper.innerHTML = `
             <div class="chart">
                 <div class="chartHandle">
-                        <button class="headerBtn" id="obj-btn" type="button" title="Add Object">+</button>
-                        <button class="headerBtn" id="connectBtn" type="button" title="Connect">[🔗 Connect: Off]</button>
+                        <button class="headerBtn" id="obj-btn" type="button" title="Add Object">+ Add Object</button>
+                        <button class="headerBtn" id="connect-btn" type="button" title="Connect">🔗 Connect: Off</button>
                         <button class="headerBtn" id="close-btn" type="button" title="Remove">🗑</button>
                 </div>
                 <div class="chart-body">
@@ -236,15 +236,15 @@ fbtn.addEventListener('click', async () => {
     chartWrapper.innerHTML = `
     <div class="chart">
         <div class="chartHandle">
-                <button class="headerBtn" id="obj-btn" type="button" title="Add Object">+</button>
-                <button class="headerBtn" id="connectBtn" type="button" title="Connect">[🔗 Connect: Off]</button>
+                <button class="headerBtn" id="obj-btn" type="button" title="Add Object">+ Add Object</button>
+                <button class="headerBtn" id="connect-btn" type="button" title="Connect">🔗 Connect: Off</button>
                 <button class="headerBtn" id="close-btn" type="button" title="Remove">🗑</button>
         </div>
         <div class="chart-body">
             <svg class="connections-layer">
                 <defs> 
                     <marker id ="arrowhead" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
-                        <path d="M0,0 L0,6 L9,3 z" fill="#5b8cff" />
+                        <path d="M0,0 L0,6 L9,3 z" fill="#d035ff" />
                     </marker>
                 </defs>
             </svg>
@@ -266,7 +266,7 @@ function makeInteractive(chartWrapper) {
     const handle = chartWrapper.querySelector('.resize-handle');
     const closeBtn = chartWrapper.querySelector('#close-btn');
     const objBtn = chartWrapper.querySelector('#obj-btn');
-    const connectBtn = chartWrapper.querySelector('#connectBtn');
+    const connectBtn = chartWrapper.querySelector('#connect-btn');
     const workspace = chartWrapper.querySelector('.chart-body');
     const svg = chartWrapper.querySelector('.connections-layer');
 
@@ -366,7 +366,7 @@ function makeInteractive(chartWrapper) {
 
     connectBtn.addEventListener("click", () => {
         connectMode = !connectMode;
-        connectBtn.textContent = connectMode ? '[🔗 Connect: On]' : '[🔗 Connect: Off]';
+        connectBtn.textContent = connectMode ? '🔗 Connect: On' : '🔗 Connect: Off';
         connectBtn.classList.toggle("on", connectMode);
         workspace.classList.toggle("connect-mode", connectMode);
         if (!connectMode && pendingFrom) {
@@ -445,7 +445,7 @@ function makeInteractive(chartWrapper) {
         const deleteBtn = document.createElement('button'); // ADD
         deleteBtn.className = 'shape-delete';
         deleteBtn.type = 'button';
-        deleteBtn.textContent = 'X';
+        deleteBtn.textContent = 'x';
         deleteBtn.title = 'Delete';
         shape.appendChild(deleteBtn);
 
@@ -612,7 +612,7 @@ function makeInteractive(chartWrapper) {
 
     function createConnection(fromEl, toEl) { 
         const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        line.setAttribute('stroke', '#5b8cff');
+        line.setAttribute('stroke', '#d035ff');
         line.setAttribute('stroke-width', '2');
         line.setAttribute('marker-end', 'url(#arrowhead)');
         line.setAttribute('data-from', fromEl.id);

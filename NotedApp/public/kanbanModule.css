@@ -239,7 +239,7 @@ h3 {
 }
 
 .modal-content {
-    background-color: #fefefe;
+    background-color: #ad2525;
     margin: 5% auto;
     padding: 20px;
     border: 1px solid #888;
@@ -328,10 +328,11 @@ h3 {
 
 /* Add Card Form Modal */
 .form-modal-content {
-    background-color: #fefefe;
+    background-color: rgba(17, 5, 31, 0.849);
+    color: var(--text);
     margin: 10% auto;
     padding: 20px;
-    border: 1px solid #888;
+    border: 1px solid #8c6fa756;
     border-radius: 8px;
     width: 90%;
     max-width: 400px;
@@ -346,22 +347,61 @@ h3 {
     display: block;
     margin-bottom: 5px;
     font-weight: bold;
-    color: #333;
+    color:var(--muted);
 }
 
 .form-group input,
 .form-group textarea {
     width: 100%;
     padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    border: 1.7px solid var(--pink);
+    border-radius: 20px;
     box-sizing: border-box;
     font-family: Arial, sans-serif;
+}
+
+#boardTitleInput{
+    background-color:rgba(17, 5, 31, 0.849);
+    color: var(--text);
+    border: 1.7px solid var(--pink);
+    border-radius: 40px;
+}
+
+#boardTitleInput:focus {
+    outline: none;
+    border-color: var(--purple);
 }
 
 .form-group textarea {
     resize: vertical;
     min-height: 100px;
+}
+
+#cardTitle{
+    background-color:rgba(17, 5, 31, 0.849) ;
+}
+
+#cardTitle:focus{
+    outline: none;
+    border: 3px solid red;
+}
+
+#cardDescription{
+    background-color:rgba(17, 5, 31, 0.849) ;
+}
+
+#cardDescription:focus{
+    outline: none;
+    border: 3px solid red;
+}
+
+#cardImage{
+    background-color:rgba(17, 5, 31, 0.849) ;
+}
+
+#cardImage:focus{
+    outline: none;
+    border: 3px solid red;
 }
 
 .form-buttons {
@@ -379,17 +419,17 @@ h3 {
 }
 
 .form-cancel-btn {
-    background-color: #999;
-    color: white;
+    background-color:var(--purple);
+    color: var(--text);
 }
 
 .form-cancel-btn:hover {
-    background-color: #777;
+    background-color: rgb(61, 15, 104);
 }
 
 .form-submit-btn {
-    background-color: #2196F3;
-    color: white;
+    background: linear-gradient(90deg, #e0207a, #d63090);
+    color: var(--text);
 }
 
 .form-submit-btn:hover {
@@ -400,7 +440,6 @@ h3 {
 .column-list {
     flex: 1;
     min-height: 300px;
-    
     padding: 5px;
     border-radius: 4px;
     transition: min-height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
