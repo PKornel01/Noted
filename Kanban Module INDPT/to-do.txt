@@ -1,3 +1,0 @@
-To do:
-coordinate storing
-backend integration
