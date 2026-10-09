@@ -383,16 +383,35 @@ function makeInteractive(chartWrapper) {
 
         modalOverlay.innerHTML = ` 
         <div class="objMenu">
-            <div class="objMenuHeader"> 
+            <div class="objMenuHeader">
+                <h2 id=shapeMenuTitle>Shape selector</h2>
                 <button class="headerBtn" id="close-objMenu" type="button" title="Close">[x]</button>
             </div>
             <div class="objMenuBody">
-                <div class="objMenuItem" id="shpRoundRectangleMake">Rounded Rectangle</div>
-                <div class="objMenuItem" id="shpOvalMake">Oval</div>
-                <div class="objMenuItem" id="shpRectangleMake">Rectangle</div>
-                <div class="objMenuItem" id="shpDiamondMake">Diamond</div>
-                <div class="objMenuItem" id="shpParallelogramMake">Parallelogram</div>
-                <div class="objMenuItem" id="shpSmallCircleMake">Small Circle</div>
+                <div class="objMenuItem" id="shpRoundRectangleMake">
+                    <div class="shape-preview shp-preview-roundrectangle"></div>
+                    <span class="shape-name">Rounded Rectangle</span>
+                </div>
+                <div class="objMenuItem" id="shpOvalMake">
+                    <div class="shape-preview shp-preview-oval"></div>
+                    <span class="shape-name">Oval</span>
+                </div>
+                <div class="objMenuItem" id="shpRectangleMake">
+                    <div class="shape-preview shp-preview-rectangle"></div>
+                    <span class="shape-name">Rectangle</span>
+                </div>
+                <div class="objMenuItem" id="shpDiamondMake">
+                    <div class="shape-preview shp-preview-diamond"></div>
+                    <span class="shape-name">Diamond</span>
+                </div>
+                <div class="objMenuItem" id="shpParallelogramMake">
+                    <div class="shape-preview shp-preview-parallelogram"></div>
+                    <span class="shape-name">Parallelogram</span>
+                </div>
+                <div class="objMenuItem" id="shpSmallCircleMake">
+                    <div class="shape-preview shp-preview-smallcircle"></div>
+                    <span class="shape-name">Small Circle</span>
+                </div>
             </div>
         </div>
         `;

@@ -124,47 +124,67 @@
 }
 
 .objMenu {
-  background: #fff;
+  background-color: rgba(17, 5, 31, 0.849);
+  color: var(--text);
+  font-weight: bold;
+  border: 1px solid #8c6fa756;
   border-radius: 8px;
-  width: 200%;
-  height: 160%;
+  width: 380px;
+  height: 300px;
   max-width: 680px;          /* caps how wide it gets on large screens */
   max-height: 90vh;           /* never taller than 90% of the viewport */
-  overflow-y: auto;            /* scrolls internally if content is too tall, instead of overflowing the screen */
-  position: relative;           /* so .modal-close can be positioned inside it */
+  position: relative;
+  overflow: hidden;
 }
 
 .objMenuHeader {
     display: flex;
-    justify-content: space-between;
     touch-action: none;
     padding: 5px;
-    background: var(--panel-header);
-    border-bottom: 1px solid var(--border);
     border-radius: 6px 6px 0 0;
     font-size: 0.78rem;
     color: var(--text-dim);
     user-select: none;
-    background-color: bisque;
+    background-color:rgba(17, 5, 31, 0.849) ;
     height: 35px;
 }
 
+#shapeMenuTitle {
+}
+
 #close-objMenu {
-    margin-left: 95%;
+    margin-left: 60%;
 }
 
 .objMenuBody {
     padding: 10px;
     align-items: center;
     display: flex;
+    flex-wrap: wrap;
+    gap:16px;
+    padding:16px;
 }
 
 .objMenuItem {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: space-between;
-    padding: 8px;
+    justify-content: center;
+    gap: 8px;
+    width:100px;
+    padding:10px;
     cursor: pointer;
+    transition: background 0.15s;
+}
+
+.objMenuItem:hover {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.shape-name {
+    font-size: 0.75rem;
+    text-align: center;
+    color: #333;
 }
 
 .chart-body {
@@ -202,6 +222,37 @@
     touch-action: none;
     user-select: none;
     text-align: center;
+}
+
+.shape-preview {
+    width: 80px;
+    height: 52px;
+    background: rgba(158, 131, 167, 0.5);
+    border: 1.5px solid var(--card-border);
+}
+
+.shp-preview-roundrectangle {
+    border-radius: 10px;
+}
+
+.shp-preview-oval {
+    border-radius: 50%;
+}
+
+.shp-preview-smallcircle {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+}
+
+.shp-preview-diamond {
+    width: 30px;
+    height: 30px;
+    transform: rotate(45deg);
+}
+
+.shp-preview-parallelogram {
+    transform: skewX(-20deg);
 }
 
 .shproundrectangle { border-radius: 14px; }

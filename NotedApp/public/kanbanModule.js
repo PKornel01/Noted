@@ -655,16 +655,7 @@ function openCardDetailsModal(boardId, columnId, card) {
             <div class="modal-header">${card.title}</div>
             <div class="modal-body">
                 ${imageHtml}
-                <p class="card-description-formatted" style="
-                    white-space: pre-wrap;
-                    word-wrap: break-word;
-                    line-height: 1.6;
-                    max-width: 100%;
-                    padding: 12px 0;
-                    margin: 8px 0;
-                    font-size: 14px;
-                    color: #333;
-                ">${formattedDescription}</p>
+                <p class="card-description-formatted">${formattedDescription}</p>
             </div>
             <div class="modal-buttons">
                 <button class="modal-close-btn">Close</button>
