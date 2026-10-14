@@ -185,6 +185,7 @@ async function loadChartsFromDatabase() {
             `;
 
             fcontainer.appendChild(chartWrapper);
+            bringModuleToFront(chartWrapper);
 
             chartsData.set(domId, { persistentId: chart.id, title: chart.title });
             makeInteractive(chartWrapper);
@@ -198,7 +199,6 @@ const fbtn = document.getElementById('flowchartmaker');
 const fcontainer = document.getElementById('shared-canvas');
 
 const chartsData = new Map(); // chartId -> { persistentId: dbId }
-let containerCount = 0;
 
 // Load charts when page opens
 // App entry: when DOM is ready, check API and load charts if available.
@@ -220,8 +220,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 fbtn.addEventListener('click', async () => { 
     // Create a unique ID for this chart
     const chartId = 'chart-' + Date.now();
-
-    containerCount++; // For z-index stacking
 
     // Create a unique wrapper for this specific chart
     const chartWrapper = document.createElement('div');
@@ -255,6 +253,7 @@ fbtn.addEventListener('click', async () => {
     </div>
     `;
     fcontainer.appendChild(chartWrapper);
+    bringModuleToFront(chartWrapper);
 
     chartsData.set(chartId, { title: 'Untitled Chart' });
     makeInteractive(chartWrapper);
@@ -306,12 +305,15 @@ function makeInteractive(chartWrapper) {
 
     function activate() { 
         chartWrapper.classList.add('active');
-        bringToFront(chartWrapper);
+        bringModuleToFront(chartWrapper);
+        updateModuleDragPointer(startX, startY);
         document.addEventListener('pointermove', onDrag);
         document.addEventListener('pointerup', stopDrag);
+        document.addEventListener('pointercancel', stopDrag);
     };
 
     function onDrag(e) { 
+        updateModuleDragPointer(e.clientX, e.clientY);
         const dx = e.clientX - startX;
         const dy = e.clientY - startY;
 
@@ -353,6 +355,8 @@ function makeInteractive(chartWrapper) {
         chartWrapper.classList.remove('active');
         document.removeEventListener('pointermove', onDrag);
         document.removeEventListener('pointerup', stopDrag);
+        document.removeEventListener('pointercancel', stopDrag);
+        stopModuleAutoScroll();
 
         persistChartToDB(chartWrapper)
     };
@@ -736,11 +740,6 @@ function makeInteractive(chartWrapper) {
     }
 
     rehydrateExistingContent();
-};
-
-function bringToFront(element) { 
-    containerCount++;
-    element.style.zIndex = containerCount;
 };
 
 async function deleteChartFromUI(chartDomId) {

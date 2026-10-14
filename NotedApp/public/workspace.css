@@ -4,6 +4,14 @@
     box-sizing: border-box;
 }
 
+html {
+    scrollbar-width: none;
+}
+
+html::-webkit-scrollbar {
+    display: none;
+}
+
 :root {
     --bg: linear-gradient(45deg, #1b0a36, #050D34);
     --pink: #ff2d9e;
@@ -70,9 +78,7 @@ body{
     position: relative;      
     height: 900px;
     overflow: auto;
-    background: rgba(255,255,255,0.07);
-    backdrop-filter: blur(15px) saturate(100%) brightness(1.2);
-    -webkit-backdrop-filter: blur(18px);
+    background: rgba(22, 16, 45, 0.78);
     border: 1.7px solid var(--card-border);
     border-radius: 15px;
     padding: 12px;
