@@ -385,7 +385,7 @@ function makeInteractive(chartWrapper) {
         <div class="objMenu">
             <div class="objMenuHeader">
                 <h2 id=shapeMenuTitle>Shape selector</h2>
-                <button class="headerBtn" id="close-objMenu" type="button" title="Close">[x]</button>
+                <button class="headerBtn" id="close-objMenu" type="button" title="Close">🗑</button>
             </div>
             <div class="objMenuBody">
                 <div class="objMenuItem" id="shpRoundRectangleMake">

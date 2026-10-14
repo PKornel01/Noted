@@ -25,9 +25,12 @@ body{
 }
 
 #sidebar {
+    margin-left: 20px;
+    margin-top: 10rem;
     width: 100px;
-    height: 800px;
-    background-color: #292626;
+    height: 400px;
+    background: rgba(36, 8, 70, 0.853);
+    border-radius: 10px;
     box-sizing: border-box;
     position: fixed;
     align-items: center;

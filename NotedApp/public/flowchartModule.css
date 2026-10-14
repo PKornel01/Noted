@@ -140,20 +140,31 @@
 .objMenuHeader {
     display: flex;
     touch-action: none;
-    padding: 5px;
-    border-radius: 6px 6px 0 0;
+    padding: 10px;
+    border-radius: 6px 6px 6px 6px;
     font-size: 0.78rem;
     color: var(--text-dim);
     user-select: none;
     background-color:rgba(17, 5, 31, 0.849) ;
-    height: 35px;
 }
 
 #shapeMenuTitle {
+    flex: 1;
 }
 
 #close-objMenu {
-    margin-left: 60%;
+    background-color: rgba(255, 255, 255, 0.3);
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.board-delete-btn:hover {
+    background-color: var(--muted);
 }
 
 .objMenuBody {
@@ -184,7 +195,6 @@
 .shape-name {
     font-size: 0.75rem;
     text-align: center;
-    color: #333;
 }
 
 .chart-body {
@@ -227,8 +237,14 @@
 .shape-preview {
     width: 80px;
     height: 52px;
-    background: rgba(158, 131, 167, 0.5);
-    border: 1.5px solid var(--card-border);
+    background: rgba(92, 73, 99, 0.5);
+    border: 1.5px solid var(--purple);
+    transition: background 0.2s, border 0.2s;
+}
+
+.shape-preview:hover {
+    background: rgba(179, 149, 190, 0.5);
+    border: 1.5px solid var(--pink);
 }
 
 .shp-preview-roundrectangle {
