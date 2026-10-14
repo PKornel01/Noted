@@ -40,7 +40,8 @@ body {
     padding: 12.8px 30px;
     border-radius: 100px;
     margin: 20px auto 90px;
-    background: rgba(28, 18, 48, 0.94);
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(15px) saturate(145%) brightness(1.2);
     border: 1.5px solid rgba(255, 255, 255, 0.2);
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
 }
@@ -176,7 +177,9 @@ body {
 }
 
 .projects-box{
-    background: rgba(28, 18, 48, 0.9);
+    background: rgba(255,255,255,0.07);
+    backdrop-filter: blur(15px) saturate(100%) brightness(1.2);
+    -webkit-backdrop-filter: blur(18px);
     border: 1.7px solid var(--card-border);
     border-radius: 23px;
     margin: 130px 30px 0px;
@@ -190,6 +193,7 @@ body {
     min-width: 265px;
     overflow-y: auto;
     align-content: flex-start;
+    backdrop-filter: var(--card);
     display: flex;
     flex-wrap: wrap;
     gap: 16px;
@@ -286,7 +290,9 @@ body {
 /*Project Boxes*/
 
 .project-box {
-    background: rgba(35, 24, 55, 0.96);
+    background: rgba(255,255,255,0.07);
+    backdrop-filter: blur(15px) saturate(100%) brightness(1.2);
+    -webkit-backdrop-filter: blur(18px);
     position: relative;
     width: 200px;
     min-width: 150px;

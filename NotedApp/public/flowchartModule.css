@@ -209,7 +209,9 @@
     position: absolute;
     width: 100px;
     height: 60px;
-        background: rgba(158, 131, 167, 0.5);
+    background: rgba(158, 131, 167, 0.349);
+    backdrop-filter: blur(15px) saturate(100%) brightness(1.2);
+    -webkit-backdrop-filter: blur(18px);
     border: 1.7px solid var(--card-border);
     display: flex;
     align-items: center;
@@ -264,7 +266,9 @@
     width: 70px;
     height: 70px;
     border: 1.7px solid var(--card-border);
-    background: rgba(158, 131, 167, 0.5);
+    background: rgba(158, 131, 167, 0.349);
+    backdrop-filter: blur(15px) saturate(100%) brightness(1.2);
+    -webkit-backdrop-filter: blur(18px);
     transform: rotate(45deg);
     clip-path: none;   /* remove the old hack */
     box-shadow: none;  /* remove the old hack */
