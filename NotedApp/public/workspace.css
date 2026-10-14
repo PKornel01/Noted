@@ -4,6 +4,14 @@
     box-sizing: border-box;
 }
 
+html {
+    scrollbar-width: none;
+}
+
+html::-webkit-scrollbar {
+    display: none;
+}
+
 :root {
     --bg: linear-gradient(45deg, #1b0a36, #050D34);
     --pink: #ff2d9e;

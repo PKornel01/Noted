@@ -175,6 +175,7 @@ async function loadBoardsFromDatabase() {
             `;
 
             kcontainer.appendChild(boardWrapper);
+            bringModuleToFront(boardWrapper);
 
             // Ensure any add-card buttons inside loaded HTML point to the
             // runtime DOM id for this board (domId). Persisted HTML may
@@ -306,6 +307,7 @@ kbtn.addEventListener('click', async () => {
     `;
 
     kcontainer.appendChild(boardWrapper);
+    bringModuleToFront(boardWrapper);
 
     // Initialize board data storage
     boardsData.set(boardId, {
@@ -856,17 +858,8 @@ function makeElementMovable(elmnt) {
 
   function dragMouseDown(e) {
     e.preventDefault();
-
-    // 1. Get all boards on the page
-    const allBoards = document.querySelectorAll('.board-container');
-
-    // 2. Set all boards to a lower baseline z-index
-    allBoards.forEach(board => {
-        board.style.zIndex = "1"; 
-    });
-
-    // 3. Set THIS specific board to a much higher value
-    elmnt.style.zIndex = "5";
+        bringModuleToFront(elmnt);
+        updateModuleDragPointer(e.clientX, e.clientY);
 
     // Get mouse position at startup
     pos3 = e.clientX;
@@ -879,6 +872,7 @@ function makeElementMovable(elmnt) {
 
   function elementDrag(e) {
     e.preventDefault();
+        updateModuleDragPointer(e.clientX, e.clientY);
     // Calculate new cursor position
     pos1 = pos3 - e.clientX;
     pos2 = pos4 - e.clientY;
@@ -900,6 +894,7 @@ function makeElementMovable(elmnt) {
     // Stop moving when mouse button is released
     document.onmouseup = null;
     document.onmousemove = null;
+        stopModuleAutoScroll();
     
     // Save board position to database
     persistBoardToDB(elmnt);

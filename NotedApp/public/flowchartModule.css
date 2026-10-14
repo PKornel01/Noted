@@ -40,6 +40,7 @@
 
 .chart-container {
     position: absolute;   /* required — makes left/top from JS actually apply */
+    z-index: 1;
     width: 300px;          /* starting size — your JS never sets an initial*/
     height: 200px;
 }

@@ -6,19 +6,6 @@ const session = require('express-session')
 const path = require('path');
 require('dotenv').config();
 
-//DIAGNOSTICS
-process.on('exit', (code) => {
-    console.log('🛑 Process is exiting with code:', code);
-});
-
-process.on('uncaughtException', (err) => {
-    console.error('💥 Uncaught exception:', err);
-});
-
-process.on('unhandledRejection', (reason) => {
-    console.error('💥 Unhandled promise rejection:', reason);
-});
-
 const app = express();
 const PORT = process.env.Port || 3000;
 
@@ -39,7 +26,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 //app.use(express.static('public'));
 
 // Database connection pool
-const pool = mysql.createPool({
+app.locals.pool = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
@@ -71,7 +58,7 @@ app.post('/api/register', async (req, res) => {
             return res.status(400).json({ error: 'Email and password are required}'});
         }
 
-        const connection = await pool.getConnection();
+        const connection = await app.locals.pool.getConnection();
 
         const [existing] = await connection.query('SELECT id FROM users WHERE email = ?', [email])
         if (existing.length > 0) {
@@ -115,7 +102,7 @@ app.post('/api/login', async (req, res) => {
             return res.status(400).json({ error: 'Email and password are required'})
         }
 
-        const connection = await pool.getConnection();
+        const connection = await app.locals.pool.getConnection();
         const [users] = await connection.query('SELECT * FROM users WHERE email = ?', [email])
         connection.release();
 
@@ -151,7 +138,7 @@ app.post('/api/logout', (req, res) => {
 
 app.get('/api/me', requireAuth, async (req, res) => {
     try {
-        const connection = await pool.getConnection();
+        const connection = await app.locals.pool.getConnection();
         const [users] = await connection.query(
             'SELECT id, username, email, bio, title FROM users WHERE id = ?',
             [req.session.userId]
@@ -175,7 +162,7 @@ app.put('/api/me', requireAuth, async (req, res) => {
             return res.status(400).json({ error: 'Username required' });
         }
 
-        const connection = await pool.getConnection();
+        const connection = await app.locals.pool.getConnection();
         await connection.query(
             'UPDATE users SET username = ? WHERE id = ?',
             [username.trim(), req.session.userId]
@@ -193,7 +180,7 @@ app.put('/api/me', requireAuth, async (req, res) => {
 
 app.get('/api/projects', requireAuth, async (req, res) => {
     try {
-        const connection = await pool.getConnection();
+        const connection = await app.locals.pool.getConnection();
         const [projects] = await connection.query(
             `SELECT p.id, p.project_name
              FROM projects p
@@ -217,7 +204,7 @@ app.post('/api/projects', requireAuth, async (req, res) => {
             return res.status(400).json({ error: 'Project name required'})
         }
 
-        const connection = await pool.getConnection();
+        const connection = await app.locals.pool.getConnection();
         const [result] = await connection.query(
             'INSERT INTO projects (project_name) VALUES (?)',
             [project_name.trim()]
@@ -245,7 +232,7 @@ app.put('/api/projects/:projectId', requireAuth, async (req, res) => {
             return res.status(400).json({ error: 'Project name required'})
         }
 
-        const connection = await pool.getConnection();
+        const connection = await app.locals.pool.getConnection();
 
         const [owned] = await connection.query(
             'SELECT project_id FROM user_projects WHERE project_id = ? AND user_id = ?',
@@ -268,7 +255,7 @@ app.put('/api/projects/:projectId', requireAuth, async (req, res) => {
 app.delete('/api/projects/:projectId' , requireAuth, async (req, res) => {
     try {
         const { projectId } = req.params;
-        const connection = await pool.getConnection();
+        const connection = await app.locals.pool.getConnection();
 
         const [owned] = await connection.query(
             'SELECT project_id FROM user_projects WHERE project_id = ? AND user_id = ?',
@@ -303,7 +290,7 @@ app.get('/api/boards', requireAuth, async (req, res) => {
         if (!projectId) {
             return res.status(400).json({ error: 'projectId is required' })
         }
-        const connection = await pool.getConnection();
+        const connection = await app.locals.pool.getConnection();
         const [owned] = await connection.query(
             'SELECT project_id FROM user_projects WHERE project_id = ? AND user_id = ?',
             [projectId, req.session.userId]
@@ -336,7 +323,7 @@ app.post('/api/boards', requireAuth, async (req, res) => {
             return res.status(400).json({ error: 'projectId required' });
         }
 
-        const connection = await pool.getConnection();
+        const connection = await app.locals.pool.getConnection();
         const [owned] = await connection.query(
             'SELECT project_id FROM user_projects WHERE project_id = ? AND user_id = ?',
             [projectId, req.session.userId]
@@ -366,7 +353,7 @@ app.put('/api/boards/:boardId', requireAuth,async (req, res) => {
         const { title, data, xPos = 0, yPos = 0 } = req.body;
         if (!title) return res.status(400).json({ error: 'Board title required' });
 
-        const connection = await pool.getConnection();
+        const connection = await app.locals.pool.getConnection();
         const [owned] = await connection.query(
             `SELECT m.id FROM modules m
              JOIN user_projects up ON up.project_id = m.project_id
@@ -393,7 +380,7 @@ app.put('/api/boards/:boardId', requireAuth,async (req, res) => {
 app.delete('/api/boards/:boardId', requireAuth, async (req, res) => {
     try {
         const { boardId } = req.params;
-        const connection = await pool.getConnection();
+        const connection = await app.locals.pool.getConnection();
         const [owned] = await connection.query(
             `SELECT m.id FROM modules m
              JOIN user_projects up ON up.project_id = m.project_id
@@ -426,7 +413,7 @@ app.get('/api/charts', requireAuth, async (req, res) => {
             return res.status(400).json({ error: 'projectId is required' });
         }
 
-        const connection = await pool.getConnection();
+        const connection = await app.locals.pool.getConnection();
 
         const [owned] = await connection.query(
             'SELECT project_id FROM user_projects WHERE project_id = ? AND user_id = ?',
@@ -460,7 +447,7 @@ app.post('/api/charts', requireAuth, async (req, res) => {
             return res.status(400).json({ error: 'projectId is required' });
         }
 
-        const connection = await pool.getConnection();
+        const connection = await app.locals.pool.getConnection();
         const [owned] = await connection.query(
             'SELECT project_id FROM user_projects WHERE project_id = ? AND user_id = ?',
             [projectId, req.session.userId]
@@ -492,7 +479,7 @@ app.put('/api/charts/:chartId', requireAuth, async (req, res) => {
             return res.status(400).json({ error: 'Chart title required' });
         }
 
-        const connection = await pool.getConnection();
+        const connection = await app.locals.pool.getConnection();
         const [owned] = await connection.query(
             `SELECT m.id FROM modules m
              JOIN user_projects up ON up.project_id = m.project_id
@@ -520,7 +507,7 @@ app.put('/api/charts/:chartId', requireAuth, async (req, res) => {
 app.delete('/api/charts/:chartId', requireAuth, async (req, res) => {
     try {
         const { chartId } = req.params;
-        const connection = await pool.getConnection();
+        const connection = await app.locals.pool.getConnection();
         const [owned] = await connection.query(
             `SELECT m.id FROM modules m
              JOIN user_projects up ON up.project_id = m.project_id
@@ -551,7 +538,7 @@ app.delete('/api/charts/:chartId', requireAuth, async (req, res) => {
 
 app.get('/api/health', async (req, res) => {
     try {
-        const connection = await pool.getConnection();
+        const connection = await app.locals.pool.getConnection();
         await connection.ping();
         connection.release();
         res.json({ status: 'healthy', database: 'connected' });
@@ -571,16 +558,32 @@ app.use((err, req, res, next) => {
 
 // Start server
 
-const server = app.listen(PORT, () => {
-    console.log(`🚀 Noted server running on http://localhost:${PORT}`);
-    console.log(`📊 Database: ${process.env.DB_NAME || 'noted'}`);
-    console.log(`✅ API endpoints ready`);
-});
+if (require.main === module) {
+    process.on('exit', (code) => {
+        console.log('🛑 Process is exiting with code:', code);
+    });
 
-server.on('error', (err) => {
-    console.error('💥 Server error:', err);
-});
+    process.on('uncaughtException', (err) => {
+        console.error('💥 Uncaught exception:', err);
+    });
 
-server.on('close', () => {
-    console.log('🛑 Server closed');
-});
+    process.on('unhandledRejection', (reason) => {
+        console.error('💥 Unhandled promise rejection:', reason);
+    });
+
+    const server = app.listen(PORT, () => {
+        console.log(`🚀 Noted server running on http://localhost:${PORT}`);
+        console.log(`📊 Database: ${process.env.DB_NAME || 'noted'}`);
+        console.log(`✅ API endpoints ready`);
+    });
+
+    server.on('error', (err) => {
+        console.error('💥 Server error:', err);
+    });
+
+    server.on('close', () => {
+        console.log('🛑 Server closed');
+    });
+}
+
+module.exports = app;

@@ -300,7 +300,7 @@ body {
     border: 1.7px solid var(--card-border);
     border-radius: 15px;
     padding: 12px;
-    cursor: pointer;
+    cursor: grab;
     align-items: flex-start;
     justify-content: space-between;
     transition: box-shadow 0.15s, transform 0.15s;
@@ -362,4 +362,14 @@ body {
         margin: 20px 0 30px;
         min-width: 0;
     }
+}
+
+.project-box.is-dragging {
+    opacity: 0.45;
+    cursor: grabbing;
+}
+
+.project-box.is-drop-target {
+    outline: 2px dashed var(--pink);
+    outline-offset: 3px;
 }

@@ -1,439 +1,408 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const express = require('express');
-const session = require('express-session');
-const bcrypt = require('bcrypt');
 const http = require('node:http');
-const net = require('node:net');
 
-function getFreePort() {
-  return new Promise((resolve, reject) => {
-    const server = net.createServer();
-    server.listen(0, () => {
-      const { port } = server.address();
-      server.close((err) => {
-        if (err) return reject(err);
-        resolve(port);
-      });
-    });
-    server.on('error', reject);
-  });
+process.env.SESSION_SECRET = 'automated-test-session-secret';
+const app = require('../server');
+
+function createTestPool() {
+  const state = {
+    users: [],
+    projects: [],
+    userProjects: [],
+    modules: [],
+    nextUserId: 1,
+    nextProjectId: 1,
+    nextModuleId: 1,
+    connectionError: null,
+    queryError: null,
+    pingError: null,
+  };
+
+  const connection = {
+    async query(sql, params = []) {
+      const statement = sql.replace(/\s+/g, ' ').trim();
+      if (state.queryError) throw state.queryError;
+
+      if (statement === 'SELECT id FROM users WHERE email = ?') {
+        return [state.users.filter((user) => user.email === params[0]).map(({ id }) => ({ id }))];
+      }
+      if (statement.startsWith('INSERT INTO users ')) {
+        const [username, email, password, bio, title] = params;
+        const user = { id: state.nextUserId++, username, email, password, bio, title };
+        state.users.push(user);
+        return [{ insertId: user.id }];
+      }
+      if (statement === 'SELECT * FROM users WHERE email = ?') {
+        return [state.users.filter((user) => user.email === params[0])];
+      }
+      if (statement.startsWith('SELECT id, username, email, bio, title FROM users WHERE id = ?')) {
+        const user = state.users.find((entry) => entry.id === Number(params[0]));
+        return [user ? [{ id: user.id, username: user.username, email: user.email, bio: user.bio, title: user.title }] : []];
+      }
+      if (statement.startsWith('UPDATE users SET username = ? WHERE id = ?')) {
+        const user = state.users.find((entry) => entry.id === Number(params[1]));
+        if (user) user.username = params[0];
+        return [{ affectedRows: user ? 1 : 0 }];
+      }
+      if (statement.startsWith('INSERT INTO projects ')) {
+        const project = { id: state.nextProjectId++, project_name: params[0] };
+        state.projects.push(project);
+        return [{ insertId: project.id }];
+      }
+      if (statement.includes('FROM projects p JOIN user_projects up')) {
+        const userId = Number(params[0]);
+        const projects = state.userProjects
+          .filter((link) => link.user_id === userId)
+          .map((link) => state.projects.find((project) => project.id === link.project_id))
+          .filter(Boolean)
+          .sort((a, b) => b.id - a.id)
+          .map(({ id, project_name }) => ({ id, project_name }));
+        return [projects];
+      }
+      if (statement.startsWith('INSERT INTO user_projects ')) {
+        state.userProjects.push({ user_id: Number(params[0]), project_id: Number(params[1]) });
+        return [{ affectedRows: 1 }];
+      }
+      if (statement.startsWith('SELECT project_id FROM user_projects WHERE project_id = ? AND user_id = ?')) {
+        const link = state.userProjects.find((entry) => entry.project_id === Number(params[0]) && entry.user_id === Number(params[1]));
+        return [link ? [{ project_id: link.project_id }] : []];
+      }
+      if (statement.startsWith('UPDATE projects SET project_name = ? WHERE id = ?')) {
+        const project = state.projects.find((entry) => entry.id === Number(params[1]));
+        if (project) project.project_name = params[0];
+        return [{ affectedRows: project ? 1 : 0 }];
+      }
+      if (statement.startsWith('DELETE FROM modules WHERE project_id')) {
+        state.modules = state.modules.filter((module) => module.project_id !== Number(params[0]));
+        return [{ affectedRows: 1 }];
+      }
+      if (statement.startsWith('DELETE FROM user_projects WHERE project_id')) {
+        state.userProjects = state.userProjects.filter((link) => link.project_id !== Number(params[0]));
+        return [{ affectedRows: 1 }];
+      }
+      if (statement.startsWith('DELETE FROM projects WHERE id')) {
+        state.projects = state.projects.filter((project) => project.id !== Number(params[0]));
+        return [{ affectedRows: 1 }];
+      }
+      if (statement.startsWith('SELECT m.id FROM modules m JOIN user_projects up')) {
+        const module = state.modules.find((entry) => entry.id === Number(params[0]));
+        const owned = module && state.userProjects.some((link) => link.project_id === module.project_id && link.user_id === Number(params[1]));
+        return [owned ? [{ id: module.id }] : []];
+      }
+      if (statement.startsWith('SELECT id, title, data, xPos, yPos FROM modules WHERE project_id')) {
+        const moduleType = statement.includes("module_type = 'flowchart'") ? 'flowchart' : 'kanban';
+        return [state.modules
+          .filter((entry) => entry.project_id === Number(params[0]) && entry.module_type === moduleType)
+          .sort((a, b) => b.id - a.id)
+          .map(({ id, title, data, xPos, yPos }) => ({ id, title, data, xPos, yPos }))];
+      }
+      if (statement.startsWith('INSERT INTO modules ')) {
+        const [project_id, title, data, xPos, yPos] = params;
+        const module_type = statement.includes("'flowchart'") ? 'flowchart' : 'kanban';
+        const module = { id: state.nextModuleId++, project_id: Number(project_id), title, data, xPos, yPos, module_type };
+        state.modules.push(module);
+        return [{ insertId: module.id }];
+      }
+      if (statement.startsWith('UPDATE modules SET title = ?')) {
+        const module = state.modules.find((entry) => entry.id === Number(params[4]));
+        if (module) Object.assign(module, { title: params[0], data: params[1], xPos: params[2], yPos: params[3] });
+        return [{ affectedRows: module ? 1 : 0 }];
+      }
+      if (statement.startsWith('DELETE FROM modules WHERE id = ?')) {
+        const priorLength = state.modules.length;
+        state.modules = state.modules.filter((module) => module.id !== Number(params[0]));
+        return [{ affectedRows: priorLength - state.modules.length }];
+      }
+
+      throw new Error(`Unmocked SQL in test: ${statement}`);
+    },
+    async ping() {
+      if (state.pingError) throw state.pingError;
+    },
+    release() {},
+  };
+
+  return {
+    state,
+    async getConnection() {
+      if (state.connectionError) throw state.connectionError;
+      return connection;
+    },
+  };
 }
 
-function buildApp() {
-  const app = express();
-  const users = [];
-  const projects = [];
-  const modules = [];
-  const sessionStore = new session.MemoryStore();
-
-  app.use(express.json());
-  app.use(session({
-    secret: 'test-secret',
-    resave: false,
-    saveUninitialized: false,
-    cookie: { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000 },
-    store: sessionStore,
-  }));
-
-  function requireAuth(req, res, next) {
-    if (!req.session.userId) {
-      return res.status(401).json({ error: 'Not authenticated' });
-    }
-    next();
+async function withServer(run) {
+  const pool = createTestPool();
+  app.locals.pool = pool;
+  const server = app.listen(0);
+  await new Promise((resolve) => server.once('listening', resolve));
+  const { port } = server.address();
+  try {
+    await run({ port, pool });
+  } finally {
+    await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
   }
-
-  app.get('/api/health', async (req, res) => {
-    res.json({ status: 'healthy', database: 'connected' });
-  });
-
-  app.post('/api/register', async (req, res) => {
-    const { username, email, password, bio, title } = req.body || {};
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
-    }
-
-    if (users.some((user) => user.email === email)) {
-      return res.status(409).json({ error: 'An account with that email already exists' });
-    }
-
-    const hashed = await bcrypt.hash(password, 10);
-    const user = { id: users.length + 1, username: username || null, email, password: hashed, bio: bio || null, title: title || null };
-    users.push(user);
-
-    const project = { id: projects.length + 1, project_name: `${user.username || user.email}'s Project` };
-    projects.push(project);
-
-    req.session.userId = user.id;
-    res.json({ id: user.id, username: user.username, email: user.email });
-  });
-
-  app.post('/api/login', async (req, res) => {
-    const { email, password } = req.body || {};
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
-    }
-
-    const user = users.find((entry) => entry.email === email);
-    if (!user) {
-      return res.status(401).json({ error: 'Invalid email or password' });
-    }
-
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) {
-      return res.status(401).json({ error: 'Invalid email or password' });
-    }
-
-    req.session.userId = user.id;
-    res.json({ id: user.id, username: user.username, email: user.email });
-  });
-
-  app.post('/api/logout', (req, res) => {
-    req.session.destroy(() => {
-      res.clearCookie('connect.sid');
-      res.json({ success: true });
-    });
-  });
-
-  app.get('/api/me', requireAuth, (req, res) => {
-    const user = users.find((entry) => entry.id === req.session.userId);
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    res.json({ id: user.id, username: user.username, email: user.email, bio: user.bio, title: user.title });
-  });
-
-  app.get('/api/projects', requireAuth, (req, res) => {
-    const userProjects = projects.filter((project) => {
-      const projectOwner = project.userId === req.session.userId;
-      return projectOwner || true;
-    });
-    const owned = userProjects.filter((project) => project.userId === req.session.userId);
-    res.json(owned.map((project) => ({ id: project.id, project_name: project.project_name })));
-  });
-
-  app.post('/api/projects', requireAuth, (req, res) => {
-    const { project_name } = req.body || {};
-    if (!project_name || !project_name.trim()) {
-      return res.status(400).json({ error: 'Project name required' });
-    }
-
-    const project = { id: projects.length + 1, project_name: project_name.trim(), userId: req.session.userId };
-    projects.push(project);
-    res.json({ id: project.id, project_name: project.project_name });
-  });
-
-  app.get('/api/boards', requireAuth, (req, res) => {
-    const projectId = Number(req.query.projectId);
-    const list = modules.filter((entry) => entry.projectId === projectId && entry.module_type === 'kanban');
-    res.json(list.map((entry) => ({ id: entry.id, title: entry.title, data: entry.data, xPos: entry.xPos, yPos: entry.yPos })));
-  });
-
-  app.post('/api/boards', requireAuth, (req, res) => {
-    const { title, data, xPos, yPos, projectId } = req.body || {};
-    if (!title || !projectId) {
-      return res.status(400).json({ error: 'Board title required' });
-    }
-
-    const project = projects.find((entry) => entry.id === Number(projectId));
-    if (!project || project.userId !== req.session.userId) {
-      return res.status(403).json({ error: 'Not authorized to add to this project' });
-    }
-
-    const board = { id: modules.length + 1, projectId: Number(projectId), title, data: data || '', xPos: xPos || 0, yPos: yPos || 0, module_type: 'kanban' };
-    modules.push(board);
-    res.json({ id: board.id, title, data: board.data, xPos: board.xPos, yPos: board.yPos });
-  });
-
-  app.put('/api/boards/:boardId', requireAuth, (req, res) => {
-    const item = modules.find((entry) => entry.id === Number(req.params.boardId) && entry.module_type === 'kanban');
-    if (!item) {
-      return res.status(404).json({ error: 'Board not found' });
-    }
-    const project = projects.find((entry) => entry.id === item.projectId);
-    if (!project || project.userId !== req.session.userId) {
-      return res.status(403).json({ error: 'Not authorized to edit this board' });
-    }
-
-    item.title = req.body.title || item.title;
-    item.data = req.body.data || item.data;
-    item.xPos = req.body.xPos ?? item.xPos;
-    item.yPos = req.body.yPos ?? item.yPos;
-    res.json({ id: item.id, title: item.title, data: item.data, xPos: item.xPos, yPos: item.yPos });
-  });
-
-  app.delete('/api/boards/:boardId', requireAuth, (req, res) => {
-    const index = modules.findIndex((entry) => entry.id === Number(req.params.boardId) && entry.module_type === 'kanban');
-    if (index === -1) {
-      return res.status(404).json({ error: 'Board not found' });
-    }
-    const board = modules[index];
-    const project = projects.find((entry) => entry.id === board.projectId);
-    if (!project || project.userId !== req.session.userId) {
-      return res.status(403).json({ error: 'Not authorized to delete this board' });
-    }
-    modules.splice(index, 1);
-    res.json({ success: true, id: board.id });
-  });
-
-  app.get('/api/charts', requireAuth, (req, res) => {
-    const projectId = Number(req.query.projectId);
-    const list = modules.filter((entry) => entry.projectId === projectId && entry.module_type === 'flowchart');
-    res.json(list.map((entry) => ({ id: entry.id, title: entry.title, data: entry.data, xPos: entry.xPos, yPos: entry.yPos })));
-  });
-
-  app.post('/api/charts', requireAuth, (req, res) => {
-    const { title, data, xPos, yPos, projectId } = req.body || {};
-    if (!title || !projectId) {
-      return res.status(400).json({ error: 'Chart title required' });
-    }
-    const project = projects.find((entry) => entry.id === Number(projectId));
-    if (!project || project.userId !== req.session.userId) {
-      return res.status(403).json({ error: 'Not authorized to add to this project' });
-    }
-
-    const chart = { id: modules.length + 1, projectId: Number(projectId), title, data: data || '', xPos: xPos || 0, yPos: yPos || 0, module_type: 'flowchart' };
-    modules.push(chart);
-    res.json({ id: chart.id, title, data: chart.data, xPos: chart.xPos, yPos: chart.yPos });
-  });
-
-  app.put('/api/charts/:chartId', requireAuth, (req, res) => {
-    const item = modules.find((entry) => entry.id === Number(req.params.chartId) && entry.module_type === 'flowchart');
-    if (!item) {
-      return res.status(404).json({ error: 'Chart not found' });
-    }
-    const project = projects.find((entry) => entry.id === item.projectId);
-    if (!project || project.userId !== req.session.userId) {
-      return res.status(403).json({ error: 'Not authorized to edit this chart' });
-    }
-
-    item.title = req.body.title || item.title;
-    item.data = req.body.data || item.data;
-    item.xPos = req.body.xPos ?? item.xPos;
-    item.yPos = req.body.yPos ?? item.yPos;
-    res.json({ id: item.id, title: item.title, data: item.data, xPos: item.xPos, yPos: item.yPos });
-  });
-
-  app.delete('/api/charts/:chartId', requireAuth, (req, res) => {
-    const index = modules.findIndex((entry) => entry.id === Number(req.params.chartId) && entry.module_type === 'flowchart');
-    if (index === -1) {
-      return res.status(404).json({ error: 'Chart not found' });
-    }
-    const chart = modules[index];
-    const project = projects.find((entry) => entry.id === chart.projectId);
-    if (!project || project.userId !== req.session.userId) {
-      return res.status(403).json({ error: 'Not authorized to delete this chart' });
-    }
-    modules.splice(index, 1);
-    res.json({ success: true, id: chart.id });
-  });
-
-  return app;
 }
 
-async function startTestServer() {
-  const port = await getFreePort();
-  const app = buildApp();
-  const server = app.listen(port);
-  await new Promise((resolve) => server.on('listening', resolve));
-  return { server, port };
-}
-
-async function requestJson(port, path, options = {}) {
+function request(port, route, { method = 'GET', body, headers = {} } = {}) {
   return new Promise((resolve, reject) => {
-    const body = options.body !== undefined ? JSON.stringify(options.body) : undefined;
-    const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
-    if (body !== undefined) headers['Content-Length'] = Buffer.byteLength(body);
+    const payload = body === undefined ? undefined : JSON.stringify(body);
+    const requestHeaders = { ...headers };
+    if (payload !== undefined) {
+      requestHeaders['Content-Type'] = 'application/json';
+      requestHeaders['Content-Length'] = Buffer.byteLength(payload);
+    }
 
-    const req = http.request({
-      hostname: '127.0.0.1',
-      port,
-      path,
-      method: options.method || 'GET',
-      headers,
-    }, (res) => {
+    const req = http.request({ hostname: '127.0.0.1', port, path: route, method, headers: requestHeaders, agent: false }, (res) => {
       let text = '';
-      res.on('data', (chunk) => {
-        text += chunk.toString();
-      });
+      res.setEncoding('utf8');
+      res.on('data', (chunk) => { text += chunk; });
       res.on('end', () => {
-        resolve({
-          status: res.statusCode,
-          headers: res.headers,
-          body: text ? JSON.parse(text) : null,
-        });
+        let parsed = text;
+        try { parsed = text ? JSON.parse(text) : null; } catch {}
+        resolve({ status: res.statusCode, headers: res.headers, body: parsed });
       });
     });
 
     req.on('error', reject);
-    if (body !== undefined) req.write(body);
+    if (payload !== undefined) req.write(payload);
     req.end();
   });
 }
 
-function getSessionCookie(response) {
-  const rawCookie = response.headers['set-cookie'];
-  assert.ok(rawCookie, 'Expected set-cookie header from a session-enabled route');
-  return Array.isArray(rawCookie) ? rawCookie[0].split(';')[0] : rawCookie.split(';')[0];
+function sessionCookie(response) {
+  const cookies = response.headers['set-cookie'];
+  assert.ok(cookies, 'expected session cookie');
+  return cookies[0].split(';')[0];
 }
 
-test('GET /api/health returns healthy status', async () => {
-  const { server, port } = await startTestServer();
-  try {
-    const result = await requestJson(port, '/api/health');
-    assert.equal(result.status, 200);
-    assert.deepEqual(result.body, { status: 'healthy', database: 'connected' });
-  } finally {
-    await new Promise((resolve) => server.close(resolve));
-  }
+async function register(port, { username = 'Test User', email = 'test@example.com', password = 'test-password', ...profile } = {}) {
+  return request(port, '/api/register', { method: 'POST', body: { username, email, password, ...profile } });
+}
+
+test('health endpoint, static frontend, and CORS middleware', async () => {
+  await withServer(async ({ port }) => {
+    const health = await request(port, '/api/health');
+    assert.equal(health.status, 200);
+    assert.deepEqual(health.body, { status: 'healthy', database: 'connected' });
+
+    const frontend = await request(port, '/');
+    assert.equal(frontend.status, 200);
+    assert.match(frontend.headers['content-type'], /text\/html/);
+    assert.match(frontend.body, /<html/i);
+
+    const preflight = await request(port, '/api/me', {
+      method: 'OPTIONS',
+      headers: { Origin: 'https://example.com', 'Access-Control-Request-Method': 'GET' },
+    });
+    assert.equal(preflight.status, 204);
+    assert.equal(preflight.headers['access-control-allow-origin'], '*');
+  });
 });
 
-test('POST /api/register and GET /api/me return the authenticated user', async () => {
-  const { server, port } = await startTestServer();
-  try {
-    const register = await requestJson(port, '/api/register', {
-      method: 'POST',
-      body: { username: 'alice', email: 'alice@example.com', password: 'very-secret', bio: 'Product manager', title: 'PM' },
+test('registration validates input, creates a default project, rejects duplicates, and serves profile endpoints', async () => {
+  await withServer(async ({ port, pool }) => {
+    const unauthenticated = await request(port, '/api/me');
+    assert.equal(unauthenticated.status, 401);
+
+    const missing = await request(port, '/api/register', { method: 'POST', body: { username: 'No Email' } });
+    assert.equal(missing.status, 400);
+
+    const created = await register(port, { username: 'alice', email: 'alice@example.com', bio: 'PM', title: 'Lead' });
+    assert.equal(created.status, 200);
+    assert.equal(created.body.email, 'alice@example.com');
+    const cookie = sessionCookie(created);
+    assert.equal(pool.state.users[0].password === 'test-password', false, 'password must be hashed before persistence');
+    assert.equal(pool.state.projects[0].project_name, "alice's Project");
+
+    const duplicate = await register(port, { username: 'alice2', email: 'alice@example.com' });
+    assert.equal(duplicate.status, 409);
+
+    const profile = await request(port, '/api/me', { headers: { Cookie: cookie } });
+    assert.equal(profile.status, 200);
+    assert.deepEqual(profile.body, {
+      id: created.body.id,
+      username: 'alice',
+      email: 'alice@example.com',
+      bio: 'PM',
+      title: 'Lead',
     });
 
-    assert.equal(register.status, 200);
-    assert.equal(register.body.email, 'alice@example.com');
+    const invalidUpdate = await request(port, '/api/me', { method: 'PUT', headers: { Cookie: cookie }, body: { username: '  ' } });
+    assert.equal(invalidUpdate.status, 400);
+    const update = await request(port, '/api/me', { method: 'PUT', headers: { Cookie: cookie }, body: { username: '  Alice A.  ' } });
+    assert.equal(update.status, 200);
+    assert.deepEqual(update.body, { username: 'Alice A.' });
+    assert.equal(pool.state.users[0].username, 'Alice A.');
 
-    const cookie = getSessionCookie(register);
-    const me = await requestJson(port, '/api/me', { headers: { Cookie: cookie } });
-
-    assert.equal(me.status, 200);
-    assert.equal(me.body.username, 'alice');
-    assert.equal(me.body.email, 'alice@example.com');
-  } finally {
-    await new Promise((resolve) => server.close(resolve));
-  }
+    pool.state.users.length = 0;
+    const missingUser = await request(port, '/api/me', { headers: { Cookie: cookie } });
+    assert.equal(missingUser.status, 404);
+  });
 });
 
-test('POST /api/login and POST /api/logout handle session flow', async () => {
-  const { server, port } = await startTestServer();
-  try {
-    await requestJson(port, '/api/register', {
-      method: 'POST',
-      body: { username: 'bob', email: 'bob@example.com', password: 'super-secret' },
-    });
+test('login rejects invalid credentials and logout destroys the authenticated session', async () => {
+  await withServer(async ({ port }) => {
+    const missing = await request(port, '/api/login', { method: 'POST', body: { email: 'x@example.com' } });
+    assert.equal(missing.status, 400);
+    const unknown = await request(port, '/api/login', { method: 'POST', body: { email: 'unknown@example.com', password: 'x' } });
+    assert.equal(unknown.status, 401);
 
-    const login = await requestJson(port, '/api/login', {
-      method: 'POST',
-      body: { email: 'bob@example.com', password: 'super-secret' },
-    });
+    await register(port, { username: 'bob', email: 'bob@example.com', password: 'correct-password' });
+    const wrongPassword = await request(port, '/api/login', { method: 'POST', body: { email: 'bob@example.com', password: 'wrong-password' } });
+    assert.equal(wrongPassword.status, 401);
 
+    const login = await request(port, '/api/login', { method: 'POST', body: { email: 'bob@example.com', password: 'correct-password' } });
     assert.equal(login.status, 200);
-    assert.equal(login.body.email, 'bob@example.com');
+    const cookie = sessionCookie(login);
+    assert.equal((await request(port, '/api/me', { headers: { Cookie: cookie } })).status, 200);
 
-    const cookie = getSessionCookie(login);
-    const logout = await requestJson(port, '/api/logout', {
-      method: 'POST',
-      headers: { Cookie: cookie },
-    });
-
+    const logout = await request(port, '/api/logout', { method: 'POST', headers: { Cookie: cookie } });
     assert.equal(logout.status, 200);
-    assert.equal(logout.body.success, true);
-  } finally {
-    await new Promise((resolve) => server.close(resolve));
-  }
+    assert.deepEqual(logout.body, { success: true });
+    assert.equal((await request(port, '/api/me', { headers: { Cookie: cookie } })).status, 401);
+  });
 });
 
-test('project routes require auth and create project data', async () => {
-  const { server, port } = await startTestServer();
-  try {
-    const unauth = await requestJson(port, '/api/projects');
-    assert.equal(unauth.status, 401);
+test('project routes enforce authentication and ownership for list, create, rename, and delete', async () => {
+  await withServer(async ({ port, pool }) => {
+    assert.equal((await request(port, '/api/projects')).status, 401);
+    const first = await register(port, { username: 'first', email: 'first@example.com' });
+    const firstCookie = sessionCookie(first);
+    const second = await register(port, { username: 'second', email: 'second@example.com' });
+    const secondCookie = sessionCookie(second);
 
-    const register = await requestJson(port, '/api/register', {
-      method: 'POST',
-      body: { username: 'charlie', email: 'charlie@example.com', password: 'strong-pass' },
-    });
-    const cookie = getSessionCookie(register);
+    const invalid = await request(port, '/api/projects', { method: 'POST', headers: { Cookie: firstCookie }, body: { project_name: '   ' } });
+    assert.equal(invalid.status, 400);
+    const created = await request(port, '/api/projects', { method: 'POST', headers: { Cookie: firstCookie }, body: { project_name: '  Launch plan  ' } });
+    assert.equal(created.status, 200);
+    assert.equal(created.body.project_name, 'Launch plan');
 
-    const createProject = await requestJson(port, '/api/projects', {
-      method: 'POST',
-      headers: { Cookie: cookie },
-      body: { project_name: 'Launch plan' },
-    });
+    const listed = await request(port, '/api/projects', { headers: { Cookie: firstCookie } });
+    assert.deepEqual(listed.body.map((project) => project.project_name), ['Launch plan', "first's Project"]);
+    assert.deepEqual((await request(port, '/api/projects', { headers: { Cookie: secondCookie } })).body.map((project) => project.project_name), ["second's Project"]);
 
-    assert.equal(createProject.status, 200);
-    assert.equal(createProject.body.project_name, 'Launch plan');
+    const forbiddenRename = await request(port, `/api/projects/${created.body.id}`, { method: 'PUT', headers: { Cookie: secondCookie }, body: { project_name: 'Hijack' } });
+    assert.equal(forbiddenRename.status, 403);
+    const renamed = await request(port, `/api/projects/${created.body.id}`, { method: 'PUT', headers: { Cookie: firstCookie }, body: { project_name: 'Release plan' } });
+    assert.equal(renamed.status, 200);
+    assert.equal(renamed.body.project_name, 'Release plan');
 
-    const list = await requestJson(port, '/api/projects', { headers: { Cookie: cookie } });
-    assert.equal(list.status, 200);
-    assert.ok(Array.isArray(list.body));
-    assert.equal(list.body[0].project_name, 'Launch plan');
-  } finally {
-    await new Promise((resolve) => server.close(resolve));
-  }
+    const forbiddenDelete = await request(port, `/api/projects/${created.body.id}`, { method: 'DELETE', headers: { Cookie: secondCookie } });
+    assert.equal(forbiddenDelete.status, 403);
+    const deleted = await request(port, `/api/projects/${created.body.id}`, { method: 'DELETE', headers: { Cookie: firstCookie } });
+    assert.equal(deleted.status, 200);
+    assert.equal(deleted.body.success, true);
+    assert.equal(pool.state.projects.some((project) => project.id === created.body.id), false);
+  });
 });
 
-test('kanban and flowchart module routes support create, update, and delete operations', async () => {
-  const { server, port } = await startTestServer();
-  try {
-    const register = await requestJson(port, '/api/register', {
-      method: 'POST',
-      body: { username: 'dan', email: 'dan@example.com', password: 'dan-pass' },
-    });
-    const cookie = getSessionCookie(register);
-
-    const project = await requestJson(port, '/api/projects', {
-      method: 'POST',
-      headers: { Cookie: cookie },
-      body: { project_name: 'Roadmap' },
-    });
+test('Kanban board routes validate input and support authorized CRUD operations', async () => {
+  await withServer(async ({ port }) => {
+    assert.equal((await request(port, '/api/boards')).status, 401);
+    const owner = await register(port, { username: 'owner', email: 'owner@example.com' });
+    const ownerCookie = sessionCookie(owner);
+    const other = await register(port, { username: 'other', email: 'other@example.com' });
+    const otherCookie = sessionCookie(other);
+    const project = await request(port, '/api/projects', { method: 'POST', headers: { Cookie: ownerCookie }, body: { project_name: 'Board Project' } });
     const projectId = project.body.id;
 
-    const boardCreate = await requestJson(port, '/api/boards', {
-      method: 'POST',
-      headers: { Cookie: cookie },
+    assert.equal((await request(port, '/api/boards', { headers: { Cookie: ownerCookie } })).status, 400);
+    assert.equal((await request(port, '/api/boards', { method: 'POST', headers: { Cookie: ownerCookie }, body: { projectId } })).status, 400);
+    assert.equal((await request(port, '/api/boards', { method: 'POST', headers: { Cookie: ownerCookie }, body: { title: 'No project' } })).status, 400);
+    assert.equal((await request(port, '/api/boards', { method: 'POST', headers: { Cookie: otherCookie }, body: { title: 'Forbidden', projectId } })).status, 400);
+    assert.equal((await request(port, `/api/boards?projectId=${projectId}`, { headers: { Cookie: otherCookie } })).status, 403);
+
+    const created = await request(port, '/api/boards', {
+      method: 'POST', headers: { Cookie: ownerCookie },
       body: { title: 'Sprint board', data: '[]', xPos: 20, yPos: 40, projectId },
     });
+    assert.equal(created.status, 200);
+    assert.deepEqual(created.body, { id: created.body.id, title: 'Sprint board', data: '[]', xPos: 20, yPos: 40 });
+    assert.equal((await request(port, `/api/boards?projectId=${projectId}`, { headers: { Cookie: ownerCookie } })).body[0].title, 'Sprint board');
+    assert.equal((await request(port, `/api/boards/${created.body.id}`, { method: 'PUT', headers: { Cookie: ownerCookie }, body: { data: '[]' } })).status, 400);
+    assert.equal((await request(port, `/api/boards/${created.body.id}`, { method: 'PUT', headers: { Cookie: otherCookie }, body: { title: 'Edit' } })).status, 403);
 
-    assert.equal(boardCreate.status, 200);
-    assert.equal(boardCreate.body.title, 'Sprint board');
-
-    const boards = await requestJson(port, `/api/boards?projectId=${projectId}`, { headers: { Cookie: cookie } });
-    assert.equal(boards.status, 200);
-    assert.equal(boards.body[0].title, 'Sprint board');
-
-    const boardUpdate = await requestJson(port, `/api/boards/${boardCreate.body.id}`, {
-      method: 'PUT',
-      headers: { Cookie: cookie },
+    const updated = await request(port, `/api/boards/${created.body.id}`, {
+      method: 'PUT', headers: { Cookie: ownerCookie },
       body: { title: 'Updated sprint board', data: '[{"todo":true}]', xPos: 30, yPos: 60 },
     });
-    assert.equal(boardUpdate.status, 200);
-    assert.equal(boardUpdate.body.title, 'Updated sprint board');
+    assert.equal(updated.status, 200);
+    assert.deepEqual(updated.body, { id: String(created.body.id), title: 'Updated sprint board', data: '[{"todo":true}]', xPos: 30, yPos: 60 });
+    assert.equal((await request(port, `/api/boards/${created.body.id}`, { method: 'DELETE', headers: { Cookie: otherCookie } })).status, 403);
+    assert.equal((await request(port, `/api/boards/${created.body.id}`, { method: 'DELETE', headers: { Cookie: ownerCookie } })).body.success, true);
+    assert.equal((await request(port, `/api/boards/${created.body.id}`, { method: 'DELETE', headers: { Cookie: ownerCookie } })).status, 403);
+  });
+});
 
-    const chartCreate = await requestJson(port, '/api/charts', {
-      method: 'POST',
-      headers: { Cookie: cookie },
-      body: { title: 'Architecture Map', data: '<svg></svg>', xPos: 10, yPos: 50, projectId },
+test('flowchart routes validate input and support authorized CRUD operations', async () => {
+  await withServer(async ({ port }) => {
+    assert.equal((await request(port, '/api/charts')).status, 401);
+    const owner = await register(port, { username: 'chart-owner', email: 'chart-owner@example.com' });
+    const ownerCookie = sessionCookie(owner);
+    const other = await register(port, { username: 'chart-other', email: 'chart-other@example.com' });
+    const otherCookie = sessionCookie(other);
+    const project = await request(port, '/api/projects', { method: 'POST', headers: { Cookie: ownerCookie }, body: { project_name: 'Chart Project' } });
+    const projectId = project.body.id;
+
+    assert.equal((await request(port, '/api/charts', { headers: { Cookie: ownerCookie } })).status, 400);
+    assert.equal((await request(port, '/api/charts', { method: 'POST', headers: { Cookie: ownerCookie }, body: { projectId } })).status, 400);
+    assert.equal((await request(port, '/api/charts', { method: 'POST', headers: { Cookie: ownerCookie }, body: { title: 'No project' } })).status, 400);
+    assert.equal((await request(port, '/api/charts', { method: 'POST', headers: { Cookie: otherCookie }, body: { title: 'Forbidden', projectId } })).status, 403);
+    assert.equal((await request(port, `/api/charts?projectId=${projectId}`, { headers: { Cookie: otherCookie } })).status, 403);
+
+    const created = await request(port, '/api/charts', {
+      method: 'POST', headers: { Cookie: ownerCookie },
+      body: { title: 'Architecture map', data: '<svg></svg>', xPos: 10, yPos: 50, projectId },
     });
-    assert.equal(chartCreate.status, 200);
-    assert.equal(chartCreate.body.title, 'Architecture Map');
+    assert.equal(created.status, 200);
+    assert.equal((await request(port, `/api/charts?projectId=${projectId}`, { headers: { Cookie: ownerCookie } })).body[0].title, 'Architecture map');
+    assert.equal((await request(port, `/api/charts/${created.body.id}`, { method: 'PUT', headers: { Cookie: ownerCookie }, body: { data: '<svg/>' } })).status, 400);
+    assert.equal((await request(port, `/api/charts/${created.body.id}`, { method: 'PUT', headers: { Cookie: otherCookie }, body: { title: 'Edit' } })).status, 403);
 
-    const charts = await requestJson(port, `/api/charts?projectId=${projectId}`, { headers: { Cookie: cookie } });
-    assert.equal(charts.status, 200);
-    assert.equal(charts.body[0].title, 'Architecture Map');
-
-    const chartUpdate = await requestJson(port, `/api/charts/${chartCreate.body.id}`, {
-      method: 'PUT',
-      headers: { Cookie: cookie },
+    const updated = await request(port, `/api/charts/${created.body.id}`, {
+      method: 'PUT', headers: { Cookie: ownerCookie },
       body: { title: 'Updated architecture map', data: '<svg>updated</svg>', xPos: 15, yPos: 75 },
     });
-    assert.equal(chartUpdate.status, 200);
-    assert.equal(chartUpdate.body.title, 'Updated architecture map');
+    assert.equal(updated.status, 200);
+    assert.deepEqual(updated.body, { id: String(created.body.id), title: 'Updated architecture map', data: '<svg>updated</svg>', xPos: 15, yPos: 75 });
+    assert.equal((await request(port, `/api/charts/${created.body.id}`, { method: 'DELETE', headers: { Cookie: otherCookie } })).status, 403);
+    assert.equal((await request(port, `/api/charts/${created.body.id}`, { method: 'DELETE', headers: { Cookie: ownerCookie } })).body.success, true);
+    assert.equal((await request(port, `/api/charts/${created.body.id}`, { method: 'DELETE', headers: { Cookie: ownerCookie } })).status, 403);
+  });
+});
 
-    const boardDelete = await requestJson(port, `/api/boards/${boardCreate.body.id}`, { method: 'DELETE', headers: { Cookie: cookie } });
-    assert.equal(boardDelete.status, 200);
-    assert.equal(boardDelete.body.success, true);
+test('database failures produce API error responses for health and authenticated routes', async () => {
+  const originalConsoleError = console.error;
+  console.error = () => {};
+  try {
+    await withServer(async ({ port, pool }) => {
+      const user = await register(port, { username: 'db-user', email: 'db-user@example.com' });
+      const cookie = sessionCookie(user);
+      pool.state.queryError = new Error('query failed');
+      const projects = await request(port, '/api/projects', { headers: { Cookie: cookie } });
+      assert.equal(projects.status, 500);
+      assert.deepEqual(projects.body, { error: 'Failed to fetch projects' });
+      const profile = await request(port, '/api/me', { headers: { Cookie: cookie } });
+      assert.equal(profile.status, 500);
+      assert.deepEqual(profile.body, { error: 'Failed to fetch user' });
+      pool.state.queryError = null;
 
-    const chartDelete = await requestJson(port, `/api/charts/${chartCreate.body.id}`, { method: 'DELETE', headers: { Cookie: cookie } });
-    assert.equal(chartDelete.status, 200);
-    assert.equal(chartDelete.body.success, true);
+      pool.state.pingError = new Error('ping failed');
+      const unhealthy = await request(port, '/api/health');
+      assert.equal(unhealthy.status, 500);
+      assert.deepEqual(unhealthy.body, { status: 'unhealthy', error: 'ping failed' });
+
+      pool.state.pingError = null;
+      pool.state.connectionError = new Error('database unavailable');
+      const health = await request(port, '/api/health');
+      assert.equal(health.status, 500);
+      const login = await request(port, '/api/login', { method: 'POST', body: { email: 'x@example.com', password: 'x' } });
+      assert.equal(login.status, 500);
+      assert.deepEqual(login.body, { error: 'Failed to log in' });
+    });
   } finally {
-    await new Promise((resolve) => server.close(resolve));
+    console.error = originalConsoleError;
   }
 });
