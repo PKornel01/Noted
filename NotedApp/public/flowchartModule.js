@@ -227,8 +227,17 @@ fbtn.addEventListener('click', async () => {
     chartWrapper.id = chartId;
 
     // Set a starting position so they don't all stack perfectly on top of each other
-    chartWrapper.style.top = (100 + (document.querySelectorAll('.chart-container').length * 20)) + "px";
-    chartWrapper.style.left = (100 + (document.querySelectorAll('.chart-container').length * 20)) + "px";
+    const chartCount = document.querySelectorAll('.chart-container').length;
+    const isCompactViewport = window.matchMedia('(max-width: 760px)').matches;
+    if (isCompactViewport) {
+        const chartWidth = Math.min(300, Math.max(150, fcontainer.clientWidth - 24));
+        chartWrapper.style.width = chartWidth + 'px';
+        chartWrapper.style.top = Math.min(16 + chartCount * 16, Math.max(0, fcontainer.clientHeight - 200)) + 'px';
+        chartWrapper.style.left = Math.min(16 + chartCount * 16, Math.max(0, fcontainer.clientWidth - chartWidth)) + 'px';
+    } else {
+        chartWrapper.style.top = (100 + chartCount * 20) + "px";
+        chartWrapper.style.left = (100 + chartCount * 20) + "px";
+    }
 
     // Create the chart element
     chartWrapper.innerHTML = `
@@ -281,7 +290,7 @@ function makeInteractive(chartWrapper) {
     let startX, startY, startWidth, startHeight, startLeft, startTop;
 
     function startMove(e) {
-        if (e.target.closest('.close-btn')) return;
+        if (e.target.closest('.headerBtn')) return;
 
         e.preventDefault();
         dragMode = 'move';

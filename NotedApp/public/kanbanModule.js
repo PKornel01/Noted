@@ -176,6 +176,11 @@ async function loadBoardsFromDatabase() {
 
             kcontainer.appendChild(boardWrapper);
             bringModuleToFront(boardWrapper);
+            growCanvasIfNeeded(
+                kcontainer,
+                boardWrapper.offsetLeft + boardWrapper.offsetWidth,
+                boardWrapper.offsetTop + boardWrapper.offsetHeight
+            );
 
             // Ensure any add-card buttons inside loaded HTML point to the
             // runtime DOM id for this board (domId). Persisted HTML may
@@ -271,9 +276,15 @@ kbtn.addEventListener('click', async () => {
     boardWrapper.className = 'board-container';
     boardWrapper.id = boardId;
     
-    // Set a starting position so they don't all stack perfectly on top of each other
-    boardWrapper.style.top = (100 + (document.querySelectorAll('.board-container').length * 20)) + "px";
-    boardWrapper.style.left = (100 + (document.querySelectorAll('.board-container').length * 20)) + "px";
+    const boardCount = document.querySelectorAll('.board-container').length;
+    if (window.matchMedia('(max-width: 760px)').matches) {
+        const boardWidth = Math.min(600, Math.max(180, kcontainer.clientWidth - 16));
+        boardWrapper.style.top = Math.min(16 + boardCount * 16, Math.max(0, kcontainer.clientHeight - 240)) + 'px';
+        boardWrapper.style.left = Math.min(16 + boardCount * 16, Math.max(0, kcontainer.clientWidth - boardWidth)) + 'px';
+    } else {
+        boardWrapper.style.top = (100 + boardCount * 20) + "px";
+        boardWrapper.style.left = (100 + boardCount * 20) + "px";
+    }
 
     boardWrapper.innerHTML = `
         <div class="boardHandle">
@@ -308,6 +319,11 @@ kbtn.addEventListener('click', async () => {
 
     kcontainer.appendChild(boardWrapper);
     bringModuleToFront(boardWrapper);
+    growCanvasIfNeeded(
+        kcontainer,
+        boardWrapper.offsetLeft + boardWrapper.offsetWidth,
+        boardWrapper.offsetTop + boardWrapper.offsetHeight
+    );
 
     // Initialize board data storage
     boardsData.set(boardId, {
@@ -722,14 +738,25 @@ async function deleteCard(boardId, columnId, cardId) {
 
 // Adjust the board's minHeight based on its columns' content
 function updateBoardHeight(boardId) {
-    const boardElement = document.getElementById(boardId).querySelector('.board');
+    const boardWrapper = document.getElementById(boardId);
+    const boardElement = boardWrapper && boardWrapper.querySelector('.board');
     if (!boardElement) return;
+
+    if (window.matchMedia('(max-width: 420px)').matches) {
+        boardElement.style.minHeight = '0px';
+        growCanvasIfNeeded(
+            kcontainer,
+            boardWrapper.offsetLeft + boardWrapper.offsetWidth,
+            boardWrapper.offsetTop + boardWrapper.offsetHeight
+        );
+        return;
+    }
     
     // Get all columns in the board
     const columns = boardElement.querySelectorAll('.column');
     
     // Find the maximum height needed
-    let maxHeight = 400; // Minimum height
+    let maxHeight = window.matchMedia('(max-width: 760px)').matches ? 220 : 400;
     
     columns.forEach(column => {
         const columnList = column.querySelector('.column-list');
@@ -743,6 +770,11 @@ function updateBoardHeight(boardId) {
     
     // Apply the new height with smooth transition
     boardElement.style.minHeight = maxHeight + 'px';
+    growCanvasIfNeeded(
+        kcontainer,
+        boardWrapper.offsetLeft + boardWrapper.offsetWidth,
+        boardWrapper.offsetTop + boardWrapper.offsetHeight
+    );
 }
 
 // ============================================
@@ -848,40 +880,32 @@ function handleCardDrop(e) {
 
 // Make the entire board draggable by its handle and persist position
 function makeElementMovable(elmnt) {
-  let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+  let startX = 0, startY = 0, startLeft = 0, startTop = 0;
   const handle = elmnt.querySelector('.boardHandle');
 
   if (handle) {
-    // If present, the handle is where you move the DIV from:
-    handle.onmousedown = dragMouseDown;
+    handle.addEventListener('pointerdown', startBoardDrag);
   }
 
-  function dragMouseDown(e) {
+  function startBoardDrag(e) {
+    if (e.target.closest('button')) return;
     e.preventDefault();
-        bringModuleToFront(elmnt);
-        updateModuleDragPointer(e.clientX, e.clientY);
-
-    // Get mouse position at startup
-    pos3 = e.clientX;
-    pos4 = e.clientY;
-    document.onmouseup = closeDragElement;
-    // Call function whenever cursor moves
-    document.onmousemove = elementDrag;
-
+    startX = e.clientX;
+    startY = e.clientY;
+    startLeft = elmnt.offsetLeft;
+    startTop = elmnt.offsetTop;
+    bringModuleToFront(elmnt);
+    updateModuleDragPointer(e.clientX, e.clientY);
+    document.addEventListener('pointermove', dragBoard);
+    document.addEventListener('pointerup', stopBoardDrag);
+    document.addEventListener('pointercancel', stopBoardDrag);
   }
 
-  function elementDrag(e) {
+  function dragBoard(e) {
     e.preventDefault();
-        updateModuleDragPointer(e.clientX, e.clientY);
-    // Calculate new cursor position
-    pos1 = pos3 - e.clientX;
-    pos2 = pos4 - e.clientY;
-    pos3 = e.clientX;
-    pos4 = e.clientY;
-    // Set the element's new position
-
-    const newTop = Math.max(0, elmnt.offsetTop - pos2);
-    const newLeft = Math.max(0, elmnt.offsetLeft - pos1);
+    updateModuleDragPointer(e.clientX, e.clientY);
+    const newTop = Math.max(0, startTop + e.clientY - startY);
+    const newLeft = Math.max(0, startLeft + e.clientX - startX);
 
     elmnt.style.top = newTop + "px";
     elmnt.style.left = newLeft + "px";
@@ -890,13 +914,11 @@ function makeElementMovable(elmnt) {
 
   }
 
-  function closeDragElement() {
-    // Stop moving when mouse button is released
-    document.onmouseup = null;
-    document.onmousemove = null;
-        stopModuleAutoScroll();
-    
-    // Save board position to database
+  function stopBoardDrag() {
+    document.removeEventListener('pointermove', dragBoard);
+    document.removeEventListener('pointerup', stopBoardDrag);
+    document.removeEventListener('pointercancel', stopBoardDrag);
+    stopModuleAutoScroll();
     persistBoardToDB(elmnt);
   }
 
