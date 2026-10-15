@@ -45,26 +45,54 @@ body{
     z-index: 10;
 }
 
-#kanbanmaker {
-    width: 60px;
-    height: 60px;
+#sidebar #kanbanmaker {
+    cursor: pointer;
+    border:none;
+    border-radius: 5px;
+    width: 80px;
+    height: 90px;
     display: flex;
-    color: rgb(8, 8, 8);
-    font-size: 14px;
-    background-color: rgb(90, 90, 89);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    color: var(--text);
+    font-size: 12px;
+    font-weight: bold;
+    background-color: rgb(69, 11, 102);
     margin: 0 auto;
     margin-top: 20px;
 }
 
-#flowchartmaker {
-    width: 60px;
-    height: 60px;
+#sidebar #flowchartmaker {
+    cursor: pointer;
+    border:none;
+    border-radius: 5px;
+    width: 80px;
+    height: 90px;
     display: flex;
-    color: rgb(8, 8, 8);
-    font-size: 14px;
-    background-color: rgb(90, 90, 89);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    color: var(--text);
+    font-size: 12px;
+    font-weight: bold;
+    background-color: rgb(69, 11, 102);
     margin: 0 auto;
     margin-top: 20px;
+}
+
+#kanbanmaker img,
+#flowchartmaker img {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+}
+
+#kanbanmaker span,
+#flowchartmaker span {
+    text-align: center;
 }
 
 #sheet {
