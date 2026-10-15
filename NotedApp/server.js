@@ -330,7 +330,7 @@ app.post('/api/boards', requireAuth, async (req, res) => {
         );
         if (owned.length === 0) {
             connection.release();
-            return res.status(400).json({ error: 'Not authorized to add to this project' })
+            return res.status(403).json({ error: 'Not authorized to add to this project' })
         }
         
 
