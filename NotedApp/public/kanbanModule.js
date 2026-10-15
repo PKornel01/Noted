@@ -803,14 +803,36 @@ function handleCardDrop(e) {
     const toBoardId = this.closest('.board-container').id;
     const toColumnId = this.getAttribute('data-column');
 
-    // Prevent dropping on the same column
-    if (fromBoardId === toBoardId && fromColumnId === toColumnId) {
+    //Prevent dropping on a different board
+    if (fromBoardId !== toBoardId) {
         draggedCard = null;
         return;
     }
 
-    //Prevent dropping on a different board
-    if (fromBoardId !== toBoardId) {
+    if (fromColumnId === toColumnId) {
+        const targetCard = e.target.closest('.card');
+
+        if (!targetCard) {
+            this.appendChild(draggedCard);
+        } else if (targetCard !== draggedCard && targetCard.parentElement === this) {
+            const targetRect = targetCard.getBoundingClientRect();
+            const insertBeforeTarget = e.clientY < targetRect.top + targetRect.height / 2;
+            this.insertBefore(draggedCard, insertBeforeTarget ? targetCard : targetCard.nextSibling);
+        }
+
+        const cardData = boardsData.get(fromBoardId).cards.get(fromColumnId);
+        const cardsById = new Map(cardData.map(card => [card.id, card]));
+        const reorderedCards = Array.from(this.querySelectorAll('.card'))
+            .map(cardElement => cardsById.get(cardElement.dataset.cardId))
+            .filter(Boolean);
+        const orderChanged = reorderedCards.some((card, index) => card.id !== cardData[index].id);
+
+        if (orderChanged) {
+            cardData.splice(0, cardData.length, ...reorderedCards);
+            updateBoardHeight(fromBoardId);
+            persistBoardToDB(document.getElementById(fromBoardId));
+        }
+
         draggedCard = null;
         return;
     }
