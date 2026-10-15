@@ -4,14 +4,6 @@
     box-sizing: border-box;
 }
 
-html {
-    scrollbar-width: none;
-}
-
-html::-webkit-scrollbar {
-    display: none;
-}
-
 :root {
     --bg: linear-gradient(45deg, #1b0a36, #050D34);
     --pink: #ff2d9e;
@@ -26,21 +18,29 @@ html::-webkit-scrollbar {
 body{
     background-image:url(workspace-bg.png);
     background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
     font-family: 'Segoe UI', sans-serif;
-    display: flex;
-    flex-direction: column;
+    color: var(--text);
     min-height: 100vh;
+    min-height: 100dvh;
+    overflow: hidden;
 }
 
 #sidebar {
-    margin-left: 20px;
-    margin-top: 10rem;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
     width: 100px;
-    height: 400px;
     background: rgba(36, 8, 70, 0.853);
     border-radius: 10px;
     box-sizing: border-box;
     position: fixed;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 16px;
+    padding: 16px 0;
     align-items: center;
     z-index: 10;
 }
@@ -61,7 +61,6 @@ body{
     font-weight: bold;
     background-color: rgb(69, 11, 102);
     margin: 0 auto;
-    margin-top: 20px;
 }
 
 #sidebar #flowchartmaker {
@@ -80,7 +79,6 @@ body{
     font-weight: bold;
     background-color: rgb(69, 11, 102);
     margin: 0 auto;
-    margin-top: 20px;
 }
 
 #kanbanmaker img,
@@ -96,18 +94,21 @@ body{
 }
 
 #sheet {
+    height: 100vh;
+    height: 100dvh;
     margin-left: 120px;
     padding: 20px;
-    /*New stuff*/
     display: flex;
     flex-direction: column;
-    gap: 24px;
     position: relative;
+    min-width: 0;
 }
 
 .module-pane {
     position: relative;      
-    height: 900px;
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
     overflow: auto;
     background: rgba(255,255,255,0.07);
     backdrop-filter: blur(15px) saturate(100%) brightness(1.2);
@@ -115,6 +116,8 @@ body{
     border: 1.7px solid var(--card-border);
     border-radius: 15px;
     padding: 12px;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
 }
 
 /*----Scrollbars----*/
@@ -170,4 +173,81 @@ body{
     height: 100%;
     min-width: 100%;
     min-height: 100%;
+}
+
+@media (max-width: 760px) {
+    body {
+        background-attachment: scroll;
+    }
+
+    #sidebar {
+        top: max(10px, env(safe-area-inset-top));
+        left: max(10px, env(safe-area-inset-left));
+        transform: none;
+        width: calc(100% - 20px);
+        flex-direction: row;
+        justify-content: center;
+        gap: 12px;
+        padding: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 16px;
+        backdrop-filter: blur(15px);
+    }
+
+    #sidebar #kanbanmaker,
+    #sidebar #flowchartmaker {
+        width: min(44vw, 180px);
+        height: 58px;
+        flex-direction: row;
+        gap: 10px;
+        margin: 0;
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+
+    #kanbanmaker img,
+    #flowchartmaker img {
+        width: 40px;
+        height: 40px;
+        flex: 0 0 auto;
+    }
+
+    #sheet {
+        height: 100vh;
+        height: 100dvh;
+        margin-left: 0;
+        padding: calc(86px + env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+    }
+
+    .module-pane {
+        border-radius: 12px;
+        padding: 8px;
+        scrollbar-width: thin;
+    }
+}
+
+@media (max-width: 420px) {
+    #sidebar {
+        gap: 8px;
+        padding: 7px;
+    }
+
+    #sidebar #kanbanmaker,
+    #sidebar #flowchartmaker {
+        width: calc(50% - 4px);
+        height: 52px;
+        gap: 7px;
+        padding: 5px 8px;
+        font-size: 12px;
+    }
+
+    #kanbanmaker img,
+    #flowchartmaker img {
+        width: 34px;
+        height: 34px;
+    }
+
+    #sheet {
+        padding-top: calc(78px + env(safe-area-inset-top));
+    }
 }
