@@ -452,3 +452,142 @@ h3 {
     border-radius: 4px;
     transition: min-height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
+
+@media (max-width: 760px) {
+    .board-container {
+        width: min(600px, calc(100vw - 56px));
+        min-width: 0;
+    }
+
+    .board {
+        width: 100%;
+        min-height: 0;
+        height: auto;
+        margin: 0;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        padding: 8px;
+    }
+
+    .column {
+        width: auto;
+        min-width: 0;
+        min-height: 180px;
+        padding: 8px;
+    }
+
+    .column-list {
+        min-height: 100px;
+        overflow-wrap: anywhere;
+    }
+
+    .boardHandle {
+        min-height: 48px;
+        padding: 6px 8px;
+        gap: 6px;
+        touch-action: none;
+    }
+
+    .board-title-text {
+        min-width: 0;
+        padding-left: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        text-align: left;
+    }
+
+    .board-title-edit-btn,
+    .board-delete-btn {
+        min-width: 36px;
+        min-height: 36px;
+        padding: 6px;
+        flex: 0 0 auto;
+    }
+
+    .card-delete-btn {
+        min-width: 30px;
+        min-height: 30px;
+        opacity: 1;
+    }
+
+    .modal {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow-y: auto;
+        padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+        overscroll-behavior: contain;
+    }
+
+    .modal-content,
+    .form-modal-content {
+        width: min(100%, 500px);
+        max-height: min(90vh, 90dvh);
+        margin: auto;
+        padding: 18px;
+        overflow-y: auto;
+    }
+
+    .modal-header {
+        font-size: clamp(1.2rem, 5vw, 1.5rem);
+        overflow-wrap: anywhere;
+    }
+
+    .card-description-formatted {
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 420px) {
+    .board-container {
+        width: calc(100vw - 48px);
+    }
+
+    .board {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 8px;
+        padding: 8px;
+    }
+
+    .column {
+        min-height: 150px;
+    }
+
+    .column-list {
+        min-height: 60px;
+    }
+
+    .boardHandle {
+        gap: 4px;
+        padding: 6px;
+        font-size: 0.85rem;
+    }
+
+    .board-title-edit-btn,
+    .board-delete-btn {
+        min-width: 34px;
+        min-height: 34px;
+    }
+
+    .modal-buttons,
+    .form-buttons {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .modal-close-btn,
+    .modal-delete-btn,
+    .modal-save-btn,
+    .form-buttons button {
+        min-height: 42px;
+        padding: 10px 14px;
+    }
+}
+
+@media (hover: none) and (max-width: 760px) {
+    .card-delete-btn {
+        opacity: 1;
+    }
+}

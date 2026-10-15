@@ -344,3 +344,96 @@
 .shape-delete:hover {
    background-color: #cc0000;
 }
+
+@media (max-width: 760px) {
+    .chart-container {
+        max-width: calc(100vw - 40px);
+        max-height: calc(100dvh - 110px);
+    }
+
+    .chartHandle {
+        min-height: 48px;
+        height: auto;
+        flex-wrap: wrap;
+        padding: 6px;
+        gap: 6px;
+        touch-action: pan-y;
+    }
+
+    .chartHandle .headerBtn {
+        min-height: 36px;
+        padding: 7px 9px;
+        font-size: 0.72rem;
+    }
+
+    #close-btn {
+        min-width: 36px;
+    }
+
+    .resize-handle {
+        width: 24px;
+        height: 24px;
+    }
+
+    .resize-handle::after {
+        right: 6px;
+        bottom: 6px;
+    }
+
+    .modal {
+        align-items: center;
+        padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+    }
+
+    .objMenu {
+        width: min(100%, 420px);
+        height: auto;
+        max-height: min(90vh, 90dvh);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    .objMenuBody {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+        justify-items: center;
+        gap: 8px;
+        padding: 12px;
+    }
+
+    .objMenuItem {
+        width: 100%;
+        min-height: 100px;
+        padding: 8px 4px;
+    }
+}
+
+@media (max-width: 420px) {
+    .chart-container {
+        max-width: calc(100vw - 36px);
+    }
+
+    .chartHandle .headerBtn {
+        min-height: 34px;
+        padding: 6px 7px;
+        font-size: 0.68rem;
+    }
+
+    .objMenuHeader {
+        align-items: center;
+        padding: 12px;
+    }
+
+    #shapeMenuTitle {
+        font-size: 1rem;
+    }
+
+    #close-objMenu {
+        min-width: 40px;
+        min-height: 40px;
+    }
+
+    .shape-name {
+        font-size: 0.7rem;
+    }
+}
