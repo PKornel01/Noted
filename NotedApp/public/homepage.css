@@ -188,7 +188,9 @@ body {
 }
 
 #projects-container{
+    border-top: 1.7px solid rgba(255, 255, 255, 0.556);
     margin:40px 86px 30px;
+    padding-top: 30px;
     height: 576px;
     min-width: 265px;
     overflow-y: auto;
