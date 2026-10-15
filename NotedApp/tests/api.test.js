@@ -311,7 +311,7 @@ test('Kanban board routes validate input and support authorized CRUD operations'
     assert.equal((await request(port, '/api/boards', { headers: { Cookie: ownerCookie } })).status, 400);
     assert.equal((await request(port, '/api/boards', { method: 'POST', headers: { Cookie: ownerCookie }, body: { projectId } })).status, 400);
     assert.equal((await request(port, '/api/boards', { method: 'POST', headers: { Cookie: ownerCookie }, body: { title: 'No project' } })).status, 400);
-    assert.equal((await request(port, '/api/boards', { method: 'POST', headers: { Cookie: otherCookie }, body: { title: 'Forbidden', projectId } })).status, 400);
+    assert.equal((await request(port, '/api/boards', { method: 'POST', headers: { Cookie: otherCookie }, body: { title: 'Forbidden', projectId } })).status, 403);
     assert.equal((await request(port, `/api/boards?projectId=${projectId}`, { headers: { Cookie: otherCookie } })).status, 403);
 
     const created = await request(port, '/api/boards', {
