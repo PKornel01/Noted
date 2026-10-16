@@ -288,7 +288,7 @@ kbtn.addEventListener('click', async () => {
 
     boardWrapper.innerHTML = `
         <div class="boardHandle">
-            <span class="board-title-text">⠿ Drag Board Here</span>
+            <span class="board-title-text">⠿ Title</span>
             <button class="board-title-edit-btn" title="Click to edit board name">✎</button>
             <button class="board-delete-btn" title="Delete board">🗑</button>
         </div>

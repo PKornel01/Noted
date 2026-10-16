@@ -22,10 +22,10 @@ body {
     background-attachment: fixed;
     color: var(--text);
     font-family: 'Segoe UI', sans-serif;
-    overflow-x: hidden;
+    height: 100vh;
+    overflow: hidden;
     padding: 2px 15px 24px;
     position: relative;
-    min-height: 100vh;
 }
 
 .glass-nav {
@@ -190,7 +190,10 @@ a{
     border-radius: 23px;
     width: min(100%, 1500px);
     margin: 130px auto 0;
+    height: calc(100vh - 156px);
     padding: clamp(20px, 4vw, 32px);
+    display: flex;
+    flex-direction: column;
     transition: transform 0.2s, border-color 0.2s;
 }
 
@@ -198,8 +201,8 @@ a{
     border-top: 1.7px solid rgba(255, 255, 255, 0.556);
     margin: 32px 0 0;
     padding: 24px 0 8px;
-    height: min(62vh, 650px);
-    min-height: 280px;
+    flex: 1 1 0;
+    min-height: 0;
     min-width: 0;
     overflow-y: auto;
     align-content: flex-start;
@@ -475,14 +478,12 @@ a{
     .projects-box {
         width: 100%;
         margin-top: 105px;
+        height: calc(100vh - 131px);
         padding: 22px;
     }
 
     #projects-container {
         margin-top: 22px;
-        height: min(65vh, 620px);
-        min-height: 260px;
-        min-width: 0;
     }
 }
 
@@ -508,6 +509,7 @@ a{
 
     .projects-box {
         margin-top: 92px;
+        height: calc(100vh - 110px);
         padding: 18px 14px;
         border-radius: 18px;
     }
@@ -521,8 +523,6 @@ a{
     }
 
     #projects-container {
-        height: min(68vh, 600px);
-        min-height: 240px;
         gap: 12px;
         padding-top: 18px;
     }
@@ -589,7 +589,7 @@ a{
     }
 
     #projects-container {
-        min-height: 220px;
+        min-height: 0;
     }
 }
 
