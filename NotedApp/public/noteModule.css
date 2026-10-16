@@ -54,6 +54,43 @@
     outline: none;
 }
 
+.note-module-content::-webkit-scrollbar {
+    width: 15px;
+    height: 15px;
+}
+
+.note-module-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    background-clip: padding-box;
+    border-radius: 10px;
+}
+
+.note-module-content::-webkit-scrollbar-track:vertical {
+    margin: 22px 0;
+    border-left: 3px solid transparent;
+}
+
+.note-module-content::-webkit-scrollbar-track:horizontal {
+    margin: 0 22px;
+    border-top: 3px solid transparent;
+}
+
+.note-module-content::-webkit-scrollbar-thumb {
+    background: var(--purple);
+    border: 3px solid transparent;
+    background-clip: padding-box;
+    border-radius: 10px;
+}
+
+.note-module-content::-webkit-scrollbar-thumb:hover {
+    background: var(--pink);
+    background-clip: padding-box;
+}
+
+.note-module-content::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
 .note-module-content:empty::before {
     color: var(--muted);
     content: attr(data-placeholder);
