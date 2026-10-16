@@ -20,6 +20,7 @@
     font-weight: 700;
     touch-action: none;
     cursor: move;
+    gap:5px;
 }
 
 .picture-module-title {
@@ -38,7 +39,7 @@
     min-height: 34px;
     padding: 6px 10px;
     border: 0;
-    border-radius: 6px;
+    border-radius: 50px;
     color: var(--text);
     background: rgba(255, 255, 255, 0.2);
     font-weight: 700;

@@ -85,13 +85,13 @@ h3 {
     padding: 10px;
     cursor: move; /* Changes cursor to a crosshair/move icon */
     z-index: 10;
-    background-color: #3716636e;
+    background-color: #51226e6e;
     color:var(--text);
     font-weight: bold;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 10px;
+    gap: 5px;
 }
 
 .board-title-text {
@@ -176,7 +176,7 @@ h3 {
 .card-title {
     font-weight: bold;
     margin-bottom: 5px;
-    color:rgba(255, 255, 255, 0.747);
+    color: var(--muted);
     word-wrap: break-word;
 }
 
@@ -210,7 +210,7 @@ h3 {
     background: linear-gradient(90deg, #e0207a, #d63090);
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 50px;
     cursor: pointer;
     font-weight: bold;
     margin-top: 10px;
@@ -231,6 +231,13 @@ h3 {
     height: 100%;
     background-color: rgba(0,0,0,0.4);
     animation: fadeIn 0.3s;
+}
+
+.card-form-modal {
+    align-items: center;
+    justify-content: center;
+    overflow-y: auto;
+    padding: 16px;
 }
 
 @keyframes fadeIn {
@@ -300,7 +307,7 @@ h3 {
 .modal-close-btn, .modal-delete-btn, .modal-save-btn {
     padding: 10px 20px;
     border: none;
-    border-radius: 4px;
+    border-radius: 50px;
     cursor: pointer;
     font-weight: bold;
     transition: all 0.3s;
@@ -346,6 +353,18 @@ h3 {
     box-shadow: 0 4px 16px rgba(0,0,0,0.2);
 }
 
+.card-form-modal .form-modal-content {
+    max-height: calc(100vh - 32px);
+    max-height: calc(100dvh - 32px);
+    margin: auto;
+    overflow-y: auto;
+    transition: transform 0.2s ease;
+}
+
+.card-form-modal.has-image-preview .form-modal-content {
+    transform: translateY(clamp(-18px, -2vh, -8px));
+}
+
 .form-group {
     margin-bottom: 15px;
 }
@@ -366,6 +385,20 @@ h3 {
     box-sizing: border-box;
     font-family: Arial, sans-serif;
     color: var(--text);
+}
+
+.card-image-preview {
+    display: block;
+    width: 100%;
+    max-height: 180px;
+    margin: 0 0 10px;
+    border-radius: 8px;
+    object-fit: contain;
+    background: rgba(0, 0, 0, 0.18);
+}
+
+.card-image-preview[hidden] {
+    display: none;
 }
 
 #boardTitleInput{
@@ -421,7 +454,7 @@ h3 {
 .form-buttons button {
     padding: 10px 20px;
     border: none;
-    border-radius: 4px;
+    border-radius: 50px;
     cursor: pointer;
     font-weight: bold;
 }

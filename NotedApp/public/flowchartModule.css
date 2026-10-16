@@ -67,7 +67,7 @@
     align-items: center;
     width: 100%;
     min-width: 0;
-    gap: 4px;
+    gap: 5px;
 }
 
 .chart-title-text {
@@ -100,7 +100,7 @@
     background: linear-gradient(90deg, #e0207a, #d63090);
     color: var(--text);
     border: none;
-    border-radius: 4px;
+    border-radius: 50px;
     cursor: pointer;
     font-weight: bold;
 }
@@ -110,7 +110,7 @@
     background: linear-gradient(90deg, #8a20e0, #3b30d6);
     color: var(--text);
     border: none;
-    border-radius: 4px;
+    border-radius: 50px;
     cursor: pointer;
     font-weight: bold;
 }

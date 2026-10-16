@@ -443,6 +443,30 @@ function attachAddCardListeners(boardId) {
     });
 }
 
+function setupCardImagePreview(modalOverlay, imageInput, initialUrl = '') {
+    const preview = modalOverlay.querySelector('.card-image-preview');
+
+    const updatePreview = () => {
+        const imageUrl = imageInput.value.trim();
+        preview.hidden = true;
+        preview.removeAttribute('src');
+        if (imageUrl) preview.src = imageUrl;
+    };
+
+    preview.addEventListener('load', () => {
+        preview.hidden = false;
+        modalOverlay.classList.add('has-image-preview');
+    });
+    preview.addEventListener('error', () => {
+        preview.hidden = true;
+        modalOverlay.classList.remove('has-image-preview');
+    });
+    imageInput.addEventListener('input', updatePreview);
+    imageInput.value = initialUrl;
+    modalOverlay.classList.remove('has-image-preview');
+    updatePreview();
+}
+
 // Show modal that collects card title/description/image and creates a card
 function openAddCardModal(boardId, columnId) {
 
@@ -450,8 +474,8 @@ function openAddCardModal(boardId, columnId) {
 
     // Create modal for adding a new card
     const modalOverlay = document.createElement('div');
-    modalOverlay.className = 'modal';
-    modalOverlay.style.display = 'block';
+    modalOverlay.className = 'modal card-form-modal';
+    modalOverlay.style.display = 'flex';
 
     modalOverlay.innerHTML = `
         <div class="form-modal-content">
@@ -467,6 +491,7 @@ function openAddCardModal(boardId, columnId) {
                 </div>
                 <div class="form-group">
                     <label for="cardImage">Image URL:</label>
+                    <img class="card-image-preview" alt="Image preview" hidden>
                     <input type="url" id="cardImage" placeholder="https://example.com/image.jpg">
                 </div>
                 <div class="form-buttons">
@@ -483,6 +508,7 @@ function openAddCardModal(boardId, columnId) {
 
     // Handle form submission
     const form = modalOverlay.querySelector('#addCardForm');
+    setupCardImagePreview(modalOverlay, form.querySelector('#cardImage'));
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const title = document.getElementById('cardTitle').value;
@@ -584,59 +610,84 @@ function renderCard(boardId, columnId, card) {
 }
 
 // Card details modal
-// Show a details modal for a card (view image, description, delete)
+// Edit a card's title, description, and image URL.
 function openCardDetailsModal(boardId, columnId, card) {
     const modalOverlay = document.createElement('div');
-    modalOverlay.className = 'modal';
-    modalOverlay.style.display = 'block';
-
-    let imageHtml = '';
-    if (card.imageUrl) {
-        imageHtml = `<img src="${card.imageUrl}" alt="Card image" onerror="this.src='https://via.placeholder.com/400x300?text=Image+Not+Found'">`;
-    }
-
-    const descriptionText = card.description || 'No description provided';
-    
-    const formattedDescription = descriptionText
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/\n/g, '<br>');
+    modalOverlay.className = 'modal card-form-modal';
+    modalOverlay.style.display = 'flex';
 
     modalOverlay.innerHTML = `
-        <div class="modal-content">
-            <div class="modal-header">${card.title}</div>
-            <div class="modal-body">
-                ${imageHtml}
-                <p class="card-description-formatted">${formattedDescription}</p>
-            </div>
-            <div class="modal-buttons">
-                <button class="modal-close-btn">Close</button>
-                <button class="modal-delete-btn">Delete Card</button>
-            </div>
+        <div class="form-modal-content">
+            <h2>Edit Card</h2>
+            <form id="editCardForm">
+                <div class="form-group">
+                    <label for="cardTitle">Card Title: (Max 15 characters)</label>
+                    <input type="text" id="cardTitle" placeholder="Enter card title" required maxlength="15">
+                </div>
+                <div class="form-group">
+                    <label for="cardDescription">Description: (Max 150 characters)</label>
+                    <textarea id="cardDescription" placeholder="Enter card description" maxlength="150"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="cardImage">Image URL:</label>
+                    <img class="card-image-preview" alt="Image preview" hidden>
+                    <input type="url" id="cardImage" placeholder="https://example.com/image.jpg">
+                </div>
+                <div class="form-buttons">
+                    <button type="button" class="form-cancel-btn">Cancel</button>
+                    <button type="button" class="modal-delete-btn">Delete Card</button>
+                    <button type="submit" class="form-submit-btn">Save</button>
+                </div>
+            </form>
         </div>
     `;
 
     document.body.appendChild(modalOverlay);
 
-    // Close button
-    const closeBtn = modalOverlay.querySelector('.modal-close-btn');
-    closeBtn.addEventListener('click', () => {
-        document.body.removeChild(modalOverlay);
-    });
+    const form = modalOverlay.querySelector('#editCardForm');
+    const titleInput = form.querySelector('#cardTitle');
+    const descriptionInput = form.querySelector('#cardDescription');
+    const imageInput = form.querySelector('#cardImage');
+    titleInput.value = card.title || '';
+    descriptionInput.value = card.description || '';
+    setupCardImagePreview(modalOverlay, imageInput, card.imageUrl || '');
+    titleInput.focus();
 
-    // Delete button in details modal
-    const deleteBtn = modalOverlay.querySelector('.modal-delete-btn');
-    deleteBtn.addEventListener('click', () => {
-        deleteCard(boardId, columnId, card.id);
+    const closeModal = () => {
         document.body.removeChild(modalOverlay);
-    });
+    };
 
-    // Close when clicking outside
-    modalOverlay.addEventListener('click', (e) => {
-        if (e.target === modalOverlay) {
-            document.body.removeChild(modalOverlay);
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const title = titleInput.value.trim();
+        if (!title) {
+            titleInput.focus();
+            return;
         }
+
+        card.title = title;
+        card.description = descriptionInput.value;
+        card.imageUrl = imageInput.value.trim();
+
+        const cardElement = document.getElementById(card.id);
+        if (cardElement) {
+            cardElement.querySelector('.card-title').textContent = card.title;
+            cardElement.dataset.cardDesc = card.description;
+            cardElement.dataset.cardImage = card.imageUrl;
+        }
+
+        await persistBoardToDB(document.getElementById(boardId));
+        closeModal();
+    });
+
+    modalOverlay.querySelector('.form-cancel-btn').addEventListener('click', closeModal);
+    modalOverlay.querySelector('.modal-delete-btn').addEventListener('click', async () => {
+        closeModal();
+        await deleteCard(boardId, columnId, card.id);
+    });
+
+    modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) closeModal();
     });
 }
 

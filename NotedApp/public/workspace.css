@@ -16,7 +16,7 @@
 }
 
 body{
-    background-image:url(workspace-bg.png);
+    background-image:url(workspace-bg.jpg);
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -48,21 +48,33 @@ body{
     border-radius: 6px;
 }
 
-#workspace-home-indicator {
-    max-width: 0;
-    margin-left: 0;
+.workspace-brand-label {
+    position: relative;
+    display: block;
+    width: 3.5em;
+    height: 1.2em;
     overflow: hidden;
-    opacity: 0;
-    transform: translateX(-5px);
-    transition: max-width 180ms ease, margin-left 180ms ease, opacity 180ms ease, transform 180ms ease;
 }
 
-#workspace-brand:hover #workspace-home-indicator,
-#workspace-brand:focus-visible #workspace-home-indicator {
-    max-width: 1em;
-    margin-left: 6px;
-    opacity: 1;
-    transform: translateX(0);
+.workspace-brand-label span {
+    position: absolute;
+    inset: 0 auto auto 0;
+    transform-origin: center;
+    transition: transform 320ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.workspace-brand-back {
+    transform: translateY(-110%) rotateX(-90deg);
+}
+
+#workspace-brand:hover .workspace-brand-noted,
+#workspace-brand:focus-visible .workspace-brand-noted {
+    transform: translateY(110%) rotateX(90deg);
+}
+
+#workspace-brand:hover .workspace-brand-back,
+#workspace-brand:focus-visible .workspace-brand-back {
+    transform: translateY(0) rotateX(0);
 }
 
 #sidebar {
@@ -86,7 +98,7 @@ body{
 #sidebar #kanbanmaker {
     cursor: pointer;
     border:none;
-    border-radius: 5px;
+    border-radius: 50px;
     width: 80px;
     height: 90px;
     display: flex;
@@ -104,7 +116,7 @@ body{
 #sidebar #flowchartmaker {
     cursor: pointer;
     border:none;
-    border-radius: 5px;
+    border-radius: 50px;
     width: 80px;
     height: 90px;
     display: flex;
@@ -123,7 +135,7 @@ body{
 #sidebar #picturemaker {
     cursor: pointer;
     border: none;
-    border-radius: 5px;
+    border-radius: 50px;
     width: 80px;
     height: 90px;
     display: flex;
@@ -264,13 +276,6 @@ body{
     #workspace-brand {
         top: max(4px, env(safe-area-inset-top));
         left: max(2px, env(safe-area-inset-left));
-    }
-
-    #workspace-home-indicator {
-        max-width: 1em;
-        margin-left: 6px;
-        opacity: 1;
-        transform: translateX(0);
     }
 
     #sidebar #kanbanmaker,

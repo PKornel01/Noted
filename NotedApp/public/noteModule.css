@@ -20,6 +20,7 @@
     font-weight: 700;
     touch-action: none;
     cursor: move;
+    gap: 5px;
 }
 
 .note-module-title {
@@ -37,7 +38,7 @@
 .note-module-save {
     padding: 7px 12px;
     border: 0;
-    border-radius: 6px;
+    border-radius: 50px;
     color: var(--text);
     cursor: pointer;
 }

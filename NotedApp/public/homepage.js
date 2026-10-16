@@ -80,6 +80,7 @@ async function initHomepage() {
     const user = await res.json();
     currentUserId = user.id;
     setUsername(user.username || '');
+    loadSavedAvatar();
 
     await loadProjects();
 };
@@ -336,8 +337,14 @@ nameInput.addEventListener('keydown', (e) => {
 });
 
 //Profile Picture
-const defaultAvatar = "default-avatar.png"; // defautlt profile picture
-const userAvatarUrl = null;
+const defaultAvatar = "default-avatar.png";
+const changePicBtn = document.getElementById('changePicBtn');
+const profilePictureInput = document.getElementById('profilePictureInput');
+const maxProfilePictureSize = 2 * 1024 * 1024;
+
+function avatarStorageKey() {
+    return `noted-profile-picture:${currentUserId}`;
+}
 
 function setAvatar(url) {
     const finalUrl = url || defaultAvatar;
@@ -345,7 +352,53 @@ function setAvatar(url) {
     document.getElementById('dropdownAvatarImg').src = finalUrl;
 }
 
-setAvatar(userAvatarUrl);
+function loadSavedAvatar() {
+    try {
+        setAvatar(localStorage.getItem(avatarStorageKey()));
+    } catch (error) {
+        console.warn('Unable to load saved profile picture:', error);
+        setAvatar(null);
+    }
+}
+
+changePicBtn.addEventListener('click', () => {
+    profilePictureInput.click();
+});
+
+profilePictureInput.addEventListener('change', () => {
+    const file = profilePictureInput.files[0];
+    profilePictureInput.value = '';
+    if (!file) return;
+
+    if (!['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif', 'image/bmp'].includes(file.type)) {
+        window.alert('Choose a JPG, PNG, GIF, WebP, AVIF, or BMP image.');
+        return;
+    }
+    if (file.size > maxProfilePictureSize) {
+        window.alert('Choose an image smaller than 2 MB.');
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.addEventListener('load', () => {
+        if (typeof reader.result !== 'string') {
+            window.alert('Unable to read the selected image.');
+            return;
+        }
+        try {
+            localStorage.setItem(avatarStorageKey(), reader.result);
+            setAvatar(reader.result);
+        } catch (error) {
+            console.error('Unable to save profile picture:', error);
+            window.alert('Unable to save this image in your browser. Choose a smaller image and try again.');
+        }
+    });
+    reader.addEventListener('error', () => {
+        console.error('Unable to read selected profile picture:', reader.error);
+        window.alert('Unable to read the selected image. Please try another file.');
+    });
+    reader.readAsDataURL(file);
+});
 
 const logoutBtn = document.getElementById('logoutBtn');
 logoutBtn.addEventListener('click', async () => {
