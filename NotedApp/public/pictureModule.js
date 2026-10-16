@@ -41,7 +41,8 @@ function buildPictureModule(picture, id, position = {}) {
     wrapper.innerHTML = `
         <header class="picture-module-handle">
             <span class="picture-module-title">Picture</span>
-            <button class="picture-module-delete" type="button" aria-label="Delete picture" title="Delete picture">×</button>
+            <button class="board-title-edit-btn picture-module-title-edit-btn" type="button" title="Click to edit picture title" aria-label="Edit picture title">✎</button>
+            <button class="board-delete-btn picture-module-delete" type="button" aria-label="Delete picture" title="Delete picture">🗑</button>
         </header>
         <div class="picture-module-content">
             <div class="picture-module-frame">
@@ -60,6 +61,7 @@ function buildPictureModule(picture, id, position = {}) {
 
     const content = wrapper.querySelector('.picture-module-content');
     if (picture.data) content.innerHTML = picture.data;
+    wrapper.querySelector('.picture-module-title').textContent = picture.title || 'Picture';
     pictureModules.set(id, { title: picture.title || 'Picture', persistentId: picture.id || null });
     attachPictureModuleEvents(wrapper);
     return wrapper;
@@ -95,6 +97,9 @@ function attachPictureModuleEvents(wrapper) {
     };
     syncImageState();
 
+    wrapper.querySelector('.picture-module-title-edit-btn').addEventListener('click', () => {
+        openPictureTitleEditModal(wrapper);
+    });
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
         input.setCustomValidity('');
@@ -129,6 +134,58 @@ function attachPictureModuleEvents(wrapper) {
         }
     });
     makePictureModuleMovable(wrapper);
+}
+
+function openPictureTitleEditModal(wrapper) {
+    const metadata = pictureModules.get(wrapper.id);
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="form-modal-content">
+            <h2>Edit Picture Title</h2>
+            <form>
+                <div class="form-group">
+                    <label for="boardTitleInput">Picture Title: (Max 50 characters)</label>
+                    <input type="text" id="boardTitleInput" maxlength="50" required>
+                </div>
+                <div class="form-buttons">
+                    <button type="button" class="form-cancel-btn">Cancel</button>
+                    <button type="submit" class="form-submit-btn">Save</button>
+                </div>
+            </form>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    const input = modal.querySelector('#boardTitleInput');
+    input.value = metadata.title;
+    input.focus();
+    input.select();
+
+    const close = () => modal.remove();
+    modal.querySelector('.form-cancel-btn').addEventListener('click', close);
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) close();
+    });
+    modal.querySelector('form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const newTitle = input.value.trim();
+        if (!newTitle) return;
+
+        const previousTitle = metadata.title;
+        metadata.title = newTitle;
+        wrapper.querySelector('.picture-module-title').textContent = newTitle;
+        try {
+            await persistPictureModule(wrapper);
+            close();
+        } catch (error) {
+            metadata.title = previousTitle;
+            wrapper.querySelector('.picture-module-title').textContent = previousTitle;
+            console.error('Error saving picture title:', error);
+            alert(`Could not save picture title: ${error.message}`);
+        }
+    });
 }
 
 function makePictureModuleMovable(wrapper) {

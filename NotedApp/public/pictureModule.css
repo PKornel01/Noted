@@ -22,9 +22,19 @@
     cursor: move;
 }
 
-.picture-module-delete,
+.picture-module-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.picture-module-handle .board-title-edit-btn {
+    flex: 0 0 auto;
+}
+
 .picture-module-add {
-    min-width: 36px;
     min-height: 34px;
     padding: 6px 10px;
     border: 0;
@@ -33,10 +43,6 @@
     background: rgba(255, 255, 255, 0.2);
     font-weight: 700;
     cursor: pointer;
-}
-
-.picture-module-delete {
-    font-size: 20px;
 }
 
 .picture-module-content {

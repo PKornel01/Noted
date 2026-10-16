@@ -463,9 +463,10 @@ test('note and picture routes persist HTML modules with project ownership checks
 
       const updated = await request(port, `${endpoint}/${created.body.id}`, {
         method: 'PUT', headers: { Cookie: ownerCookie },
-        body: { title, data: '<p class="saved-content">Updated HTML</p>', xPos: 35, yPos: 55 },
+        body: { title: `Updated ${title}`, data: '<p class="saved-content">Updated HTML</p>', xPos: 35, yPos: 55 },
       });
       assert.equal(updated.status, 200);
+      assert.equal(updated.body.title, `Updated ${title}`);
       assert.equal(pool.state.modules.find((module) => module.id === created.body.id).data, '<p class="saved-content">Updated HTML</p>');
       assert.equal((await request(port, `${endpoint}/${created.body.id}`, {
         method: 'DELETE', headers: { Cookie: otherCookie },

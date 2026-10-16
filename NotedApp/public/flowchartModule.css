@@ -46,8 +46,10 @@
 }
 
 .chartHandle {
-    height: 50px;
+    min-height: 50px;
+    height: auto;
     align-items: center;
+    flex-wrap: wrap;
     cursor: move;
     touch-action: none;
     padding:10px 10px 10px;
@@ -58,6 +60,28 @@
     background-color:#37166388;
     display: flex;
     gap: 4px;
+}
+
+.chart-title-group {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-width: 0;
+    gap: 4px;
+}
+
+.chart-title-text {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.chart-title-edit-btn {
+    flex: 0 0 auto;
 }
 
 #close-btn{

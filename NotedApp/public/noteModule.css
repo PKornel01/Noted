@@ -22,19 +22,24 @@
     cursor: move;
 }
 
-.note-module-delete,
+.note-module-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.note-module-handle .board-title-edit-btn {
+    flex: 0 0 auto;
+}
+
 .note-module-save {
-    min-width: 34px;
-    min-height: 32px;
+    padding: 7px 12px;
     border: 0;
     border-radius: 6px;
     color: var(--text);
-    background: rgba(255, 255, 255, 0.2);
     cursor: pointer;
-}
-
-.note-module-delete {
-    font-size: 20px;
 }
 
 .note-module-content {
@@ -73,6 +78,16 @@
     min-width: 58px;
     background: linear-gradient(90deg, #e0207a, #d63090);
     font-weight: 700;
+}
+
+.note-module-save:disabled {
+    cursor: wait;
+    opacity: 0.7;
+}
+
+.note-module-save:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 2px;
 }
 
 @media (max-width: 760px) {

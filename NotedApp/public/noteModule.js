@@ -41,7 +41,8 @@ function buildNoteModule(note, id, position = {}) {
     wrapper.innerHTML = `
         <header class="note-module-handle">
             <span class="note-module-title">Note</span>
-            <button class="note-module-delete" type="button" aria-label="Delete note" title="Delete note">×</button>
+            <button class="board-title-edit-btn note-module-title-edit-btn" type="button" title="Click to edit note title" aria-label="Edit note title">✎</button>
+            <button class="board-delete-btn note-module-delete" type="button" aria-label="Delete note" title="Delete note">🗑</button>
         </header>
         <div class="note-module-content" contenteditable="true" role="textbox" aria-label="Note content" aria-multiline="true" data-placeholder="Write a note..."></div>
         <footer class="note-module-footer">
@@ -50,6 +51,7 @@ function buildNoteModule(note, id, position = {}) {
         </footer>
     `;
     wrapper.querySelector('.note-module-content').innerHTML = note.data || '';
+    wrapper.querySelector('.note-module-title').textContent = note.title || 'Note';
     noteModules.set(id, { title: note.title || 'Note', persistentId: note.id || null });
     attachNoteModuleEvents(wrapper);
     return wrapper;
@@ -68,8 +70,9 @@ async function persistNoteModule(wrapper) {
         if (!metadata.persistentId) {
             const created = await createNoteRecord(metadata.title, content, xPos, yPos);
             metadata.persistentId = created.id;
+        } else {
+            await saveNoteRecord(metadata.persistentId, metadata.title, content, xPos, yPos);
         }
-        await saveNoteRecord(metadata.persistentId, metadata.title, content, xPos, yPos);
         status.textContent = 'Saved';
     };
     metadata.savePromise = (metadata.savePromise || Promise.resolve()).then(save, save);
@@ -78,12 +81,21 @@ async function persistNoteModule(wrapper) {
 
 function attachNoteModuleEvents(wrapper) {
     const content = wrapper.querySelector('.note-module-content');
-    const save = () => persistNoteModule(wrapper).catch((error) => {
-        console.error('Error saving note:', error);
-        wrapper.querySelector('.note-module-status').textContent = 'Save failed';
-        alert(`Could not save note: ${error.message}`);
-    });
+    const saveButton = wrapper.querySelector('.note-module-save');
     let saveTimer;
+    const save = async () => {
+        clearTimeout(saveTimer);
+        saveButton.disabled = true;
+        try {
+            await persistNoteModule(wrapper);
+        } catch (error) {
+            console.error('Error saving note:', error);
+            wrapper.querySelector('.note-module-status').textContent = 'Save failed';
+            alert(`Could not save note: ${error.message}`);
+        } finally {
+            saveButton.disabled = false;
+        }
+    };
 
     content.addEventListener('input', () => {
         wrapper.querySelector('.note-module-status').textContent = 'Unsaved';
@@ -94,7 +106,10 @@ function attachNoteModuleEvents(wrapper) {
         clearTimeout(saveTimer);
         if (wrapper.querySelector('.note-module-status').textContent === 'Unsaved') save();
     });
-    wrapper.querySelector('.note-module-save').addEventListener('click', save);
+    saveButton.addEventListener('click', save);
+    wrapper.querySelector('.note-module-title-edit-btn').addEventListener('click', () => {
+        openNoteTitleEditModal(wrapper);
+    });
     wrapper.querySelector('.note-module-delete').addEventListener('click', async () => {
         const metadata = noteModules.get(wrapper.id);
         try {
@@ -108,6 +123,58 @@ function attachNoteModuleEvents(wrapper) {
         }
     });
     makeNoteModuleMovable(wrapper);
+}
+
+function openNoteTitleEditModal(wrapper) {
+    const metadata = noteModules.get(wrapper.id);
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="form-modal-content">
+            <h2>Edit Note Title</h2>
+            <form>
+                <div class="form-group">
+                    <label for="boardTitleInput">Note Title: (Max 50 characters)</label>
+                    <input type="text" id="boardTitleInput" maxlength="50" required>
+                </div>
+                <div class="form-buttons">
+                    <button type="button" class="form-cancel-btn">Cancel</button>
+                    <button type="submit" class="form-submit-btn">Save</button>
+                </div>
+            </form>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    const input = modal.querySelector('#boardTitleInput');
+    input.value = metadata.title;
+    input.focus();
+    input.select();
+
+    const close = () => modal.remove();
+    modal.querySelector('.form-cancel-btn').addEventListener('click', close);
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) close();
+    });
+    modal.querySelector('form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const newTitle = input.value.trim();
+        if (!newTitle) return;
+
+        const previousTitle = metadata.title;
+        metadata.title = newTitle;
+        wrapper.querySelector('.note-module-title').textContent = newTitle;
+        try {
+            await persistNoteModule(wrapper);
+            close();
+        } catch (error) {
+            metadata.title = previousTitle;
+            wrapper.querySelector('.note-module-title').textContent = previousTitle;
+            console.error('Error saving note title:', error);
+            alert(`Could not save note title: ${error.message}`);
+        }
+    });
 }
 
 function makeNoteModuleMovable(wrapper) {
