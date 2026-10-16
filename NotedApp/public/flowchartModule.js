@@ -1,18 +1,4 @@
-/*
-(async function requireLogin() {
-    const res = await fetch('/api/me');
-    if (!res.ok) window.location.href = '/signin.html';
-})();
-*/
-// Base URL for the backend API
-//const API_BASE_URL = 'http://localhost:3000/api';
-
-// ============================================
-// API HELPER FUNCTIONS
-// ============================================
-
-// Check if backend API and database are reachable
-// Returns true when server responds OK, false otherwise.
+//---API helper functions---//
 async function checkAPIHealth() {
     try {
         const response = await fetch(`${API_BASE_URL}/health`);
@@ -84,17 +70,7 @@ async function deleteChartAPI(chartId) {
     }
 }
 
-// ============================================
-// CHART PERSISTENCE FUNCTIONS
-// ============================================
-
-// Persist a chart to the database.
-// Steps:
-// 1) Read the DOM chart HTML: chartElement.querySelector('.chart').innerHTML
-// 2) If no DB id exists, call createChartAPI to insert and save the db id
-// 3) Call saveChartAPI to update the stored HTML and position
-// Note: we store HTML (a blob). Event listeners are not persisted and
-// must be re-attached when the chart is loaded.
+// Persisting charts
 async function persistChartToDB(chartElement) {
     const chartId = chartElement.id; // DOM id, e.g. 'chart-1634234'
     const meta = chartsData.get(chartId) || {};
@@ -130,8 +106,7 @@ async function persistChartToDB(chartElement) {
     return result;
 }
 
-//------------------------------------------------ Load Charts
-
+// Load saved charts
 async function loadChartsFromDatabase() {
     const charts = await fetchChartsFromAPI();
     
@@ -198,15 +173,13 @@ async function loadChartsFromDatabase() {
     });
 }
 
-//------------------------------------------------------------
-
+//---Module Functions---//
 const fbtn = document.getElementById('flowchartmaker');
 const fcontainer = document.getElementById('shared-canvas');
 
-const chartsData = new Map(); // chartId -> { persistentId: dbId }
+const chartsData = new Map();
 
 // Load charts when page opens
-// App entry: when DOM is ready, check API and load charts if available.
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('Checking if server is running...');
     
@@ -367,7 +340,7 @@ function makeInteractive(chartWrapper) {
 
     function startResize(e) { 
         e.preventDefault();
-        e.stopPropagation(); // Prevent triggering move
+        e.stopPropagation();
         dragMode = 'resize';
         startX = e.clientX;
         startY = e.clientY;
@@ -391,14 +364,6 @@ function makeInteractive(chartWrapper) {
         const dy = e.clientY - startY;
 
         if (dragMode === 'move') { 
-            /*
-            const bounds = sheetEl.getBoundingClientRect();
-            const maxLeft = Math.max(0, bounds.width - chartWrapper.offsetWidth);
-            const maxTop = Math.max(0, bounds.height - chartWrapper.offsetHeight);
-            chartWrapper.style.left = Math.min(maxLeft, Math.max(0, startLeft + dx)) + 'px';
-            chartWrapper.style.top = Math.min(maxTop, Math.max(0, startTop + dy)) + 'px';
-            */
-
             const newLeft = Math.max(0, startLeft + dx);
             const newTop = Math.max(0, startTop + dy);
 
@@ -408,11 +373,6 @@ function makeInteractive(chartWrapper) {
             growCanvasIfNeeded(fcontainer, newLeft + chartWrapper.offsetWidth, newTop + chartWrapper.offsetHeight);
         }
         else if (dragMode === 'resize') { 
-            /*
-            chartWrapper.style.width = Math.max(Min_Width, startWidth + dx) + 'px';
-            chartWrapper.style.height = Math.max(Min_Height, startHeight + dy) + 'px';
-            */
-
             const newWidth = Math.max(Min_Width, startWidth + dx);
             const newHeight = Math.max(Min_Height, startHeight + dy);
 
@@ -456,7 +416,7 @@ function makeInteractive(chartWrapper) {
         }
     });
 
-    //object modal button
+    // Object modal button
 
     objBtn.addEventListener('click', () => { 
         const modalOverlay = document.createElement('div');
@@ -526,7 +486,7 @@ function makeInteractive(chartWrapper) {
         Object.keys(shapeButtons).forEach(id => {
             modalOverlay.querySelector('#' + id).addEventListener('click', () => {
                 addShape(shapeButtons[id]);
-                document.body.removeChild(modalOverlay); // close after picking
+                document.body.removeChild(modalOverlay);
             });
         });
     });
@@ -539,10 +499,10 @@ function makeInteractive(chartWrapper) {
         
         const label = document.createElement('span');
         label.className = 'shape-label';
-        label.textContent = 'Node ' + shapeCount; // will change below
-        shape.appendChild(label); // text now lives in a child, not shape.textContent
+        label.textContent = 'Node ' + shapeCount;
+        shape.appendChild(label);
 
-        const deleteBtn = document.createElement('button'); // ADD
+        const deleteBtn = document.createElement('button');
         deleteBtn.className = 'shape-delete';
         deleteBtn.type = 'button';
         deleteBtn.textContent = 'x';
@@ -551,7 +511,7 @@ function makeInteractive(chartWrapper) {
 
 
         // Cascade spawn position so new shapes don't stack exactly on old ones
-        const shapeWidth = 100, shapeHeight = 60; // match the size from your CSS
+        const shapeWidth = 100, shapeHeight = 60;
         const maxLeft = Math.max(0, workspace.clientWidth - shapeWidth);
         const maxTop = Math.max(0, workspace.clientHeight - shapeHeight);
         const cascade = (shapeCount % 6) *26;
@@ -562,7 +522,7 @@ function makeInteractive(chartWrapper) {
         makeShapeInteractive(shape);
         makeLabelEditable(label, shape);
 
-        deleteBtn.addEventListener('click', (e) => { // ADD
+        deleteBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             deleteShape(shape);
         });
@@ -667,10 +627,6 @@ function makeInteractive(chartWrapper) {
             if (!dragging) return;
             const dx = e.clientX - startX;
             const dy = e.clientY - startY;
-            /*
-            shape.style.left = (startLeft + dx) + 'px';
-            shape.style.top = (startTop + dy) + 'px';
-            */
 
             const maxLeft = Math.max(0, workspace.clientWidth - shape.offsetWidth);
             const maxTop = Math.max(0, workspace.clientHeight - shape.offsetHeight);
@@ -678,8 +634,6 @@ function makeInteractive(chartWrapper) {
             shape.style.left = Math.min(maxLeft, Math.max(0, startLeft + dx)) + 'px';
             shape.style.top = Math.min(maxTop, Math.max(0, startTop + dy)) + 'px';
 
-            // The key line for "connected in real time": every drag frame,
-            // re-draw any connection line that touches this shape.
             updateConnectionsFor(shape);
         }
 
@@ -692,7 +646,7 @@ function makeInteractive(chartWrapper) {
         }
     }
 
-    //Connect Mode
+    // Connect Mode
 
     function handleConnectClick(shape) { 
         if (!pendingFrom) { 
@@ -772,8 +726,7 @@ function makeInteractive(chartWrapper) {
     }
 
     function rehydrateExistingContent() {
-    // Re-wire any shapes that came from saved HTML — does nothing
-    // for a freshly created, empty chart, so it's safe to always call.
+    // Re-wire any shapes that came from saved HTML
     if (!svg) {
         return;
     }
@@ -794,8 +747,7 @@ function makeInteractive(chartWrapper) {
             });
         }
 
-        // shape.id looks like "shape-7" — recover the number so future
-        // addShape() calls don't reuse an id that already exists
+        // shape.id looks like "shape-7" — recover the number so future addShape() calls don't reuse an id that already exists
         const num = parseInt(shape.id.split('-')[1], 10);
         if (!isNaN(num) && num > maxId) maxId = num;
     });
@@ -811,7 +763,7 @@ function makeInteractive(chartWrapper) {
             connections.push(conn);
             updateLine(conn); // snap it to the shapes' actual current positions
         } else {
-            line.remove(); // orphaned — its shape no longer exists, clean it up
+            line.remove();
         }
     });
     }
@@ -839,24 +791,3 @@ async function deleteChartFromUI(chartDomId) {
         }
     }
 }
-
-/*
-async function deleteShape(chartId) {
-    // Remove from data
-    const cards = chartsData.get(chartId).shape.get();
-    const index = shape.findIndex(c => c.id === shapeId);
-    if (index > -1) {
-        shape.splice(index, 1);
-    }
-
-    // Remove from DOM
-    const shapeElement = document.getElementById(shapeId);
-    if (shapeElement) {
-        shapeElement.remove();
-    }
-    
-    // Save board to database
-    const chartElement = document.getElementById(chartId);
-    await persistBoardToDB(chartElement);
-}
-*/

@@ -11,6 +11,7 @@ let draggedProjectId = null;
 let suppressProjectClickTimer = null;
 let suppressProjectClickUntil = 0;
 
+//Project Deletion
 function confirmProjectDeletion(projectName) {
     deleteProjectName.textContent = projectName;
     deleteProjectDialog.returnValue = '';
@@ -39,6 +40,7 @@ deleteProjectDialog.addEventListener('click', (e) => {
     }
 });
 
+//Project Ordering
 function projectOrderStorageKey() {
     return `noted-project-order:${currentUserId}`;
 }
@@ -68,6 +70,7 @@ function saveProjectOrder() {
     }
 }
 
+// Initialization
 async function initHomepage() {
     const res = await fetch('/api/me');
     if (!res.ok) {
@@ -110,6 +113,7 @@ function renderProjects(projects) {
     });
 }
 
+//Project Creation
 function createProjectBox(project) {
     const box = document.createElement('div');
     box.className = 'project-box';
@@ -264,6 +268,7 @@ function createProjectBox(project) {
     return box;
 }
 
+//Create Button
 createBtn.addEventListener('click', async () => {
     try {
         const res = await fetch('/api/projects', {
@@ -280,6 +285,7 @@ createBtn.addEventListener('click', async () => {
     }
 });
 
+//Profile Dropdown
 profileBtn.addEventListener('click', () => {
     dropdown.classList.toggle('open');
 });
@@ -290,6 +296,7 @@ document.addEventListener('click', (e) => {
     }
 });
 
+//Rename User
 const nameInput = document.getElementById( 'nameInput' );
 nameInput.addEventListener('blur', async () => {
     const newName = nameInput.value.trim();
@@ -316,6 +323,7 @@ nameInput.addEventListener('keydown', (e) => {
     }
 });
 
+//Profile Picture
 const defaultAvatar = "default-avatar.png"; // defautlt profile picture
 const userAvatarUrl = null;
 

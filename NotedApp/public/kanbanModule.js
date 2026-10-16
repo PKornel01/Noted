@@ -1,18 +1,4 @@
-/*
-(async function requireLogin() {
-    const res = await fetch('/api/me');
-    if (!res.ok) window.location.href = '/signin.html';
-})();
-*/
-// Base URL for the backend API
-//const API_BASE_URL = 'http://localhost:3000/api';
-
-// ============================================
-// API HELPER FUNCTIONS
-// ============================================
-
-// Check if backend API and database are reachable
-// Returns true when server responds OK, false otherwise.
+//Api health check
 async function checkAPIHealth() {
     try {
         const response = await fetch(`${API_BASE_URL}/health`);
@@ -23,8 +9,8 @@ async function checkAPIHealth() {
     }
 }
 
-// Fetch all boards (modules) from the server
-// Returns an array of board rows or [] on error.
+//---API helper functions---//
+// Fetch all board modules from the server
 async function fetchBoardsFromAPI() {
     try {
         const response = await fetch(`${API_BASE_URL}/boards?projectId=${projectId}`);
@@ -36,8 +22,7 @@ async function fetchBoardsFromAPI() {
     }
 }
 
-// Create a new board row in the DB via POST
-// Returns the created row (including insert id) or null on failure.
+// Create a new board row in the database with POST
 async function createBoardAPI(title, projectId, data = '', xPos = 0, yPos = 0) {
     try {
         const response = await fetch(`${API_BASE_URL}/boards`, {
@@ -53,8 +38,7 @@ async function createBoardAPI(title, projectId, data = '', xPos = 0, yPos = 0) {
     }
 }
 
-// Update an existing board row via PUT
-// boardId is the DB id (not the DOM id)
+// Update an existing board with PUT
 async function saveBoardAPI(boardId, title, data, xPos = 0, yPos = 0) {
     try {
         const response = await fetch(`${API_BASE_URL}/boards/${boardId}`, {
@@ -70,7 +54,7 @@ async function saveBoardAPI(boardId, title, data, xPos = 0, yPos = 0) {
     }
 }
 
-// Delete a board row using the DB id
+// Delete a board with DELETE
 async function deleteBoardAPI(boardId) {
     try {
         const response = await fetch(`${API_BASE_URL}/boards/${boardId}`, {
@@ -84,32 +68,20 @@ async function deleteBoardAPI(boardId) {
     }
 }
 
-// ============================================
-// BOARD PERSISTENCE FUNCTIONS
-// ============================================
-
-// Persist a board to the database.
-// Steps:
-// 1) Read the DOM board HTML: boardElement.querySelector('.board').innerHTML
-// 2) If no DB id exists, call createBoardAPI to insert and save the db id
-// 3) Call saveBoardAPI to update the stored HTML and position
-// Note: we store HTML (a blob). Event listeners are not persisted and
-// must be re-attached when the board is loaded.
+// Persisting board to database
 async function persistBoardToDB(boardElement) {
-    const boardId = boardElement.id; // DOM id, e.g. 'board-1634234'
+    const boardId = boardElement.id;
     const meta = boardsData.get(boardId) || {};
     const title = meta.title || 'Untitled Board';
     const xPos = parseInt(boardElement.style.left) || 0;
     const yPos = parseInt(boardElement.style.top) || 0;
     const boardHTML = boardElement.querySelector('.board').innerHTML;
 
-    // If this board does not yet have a DB id, create it first
     let dbId = meta.persistentId;
     if (!dbId) {
         const created = await createBoardAPI(title, projectId, boardHTML, xPos, yPos);
         if (created && created.id) {
             dbId = created.id;
-            // store persistent id for future saves
             boardsData.get(boardId).persistentId = dbId;
             console.log(`🆕 Created board in DB with id=${dbId}`);
         } else {
@@ -125,11 +97,7 @@ async function persistBoardToDB(boardElement) {
     return result;
 }
 
-// Load saved boards from the server and reconstruct interactive UI.
-// Important subtleties:
-// - The saved HTML blob does not include JS event listeners.
-// - We clear column HTML and re-create card nodes with `renderCard`
-//   so click/drag/delete handlers are attached.
+// Load saved boards from the server and reconstruct interactive UI
 async function loadBoardsFromDatabase() {
     const boards = await fetchBoardsFromAPI();
     
@@ -182,13 +150,9 @@ async function loadBoardsFromDatabase() {
                 boardWrapper.offsetTop + boardWrapper.offsetHeight
             );
 
-            // Ensure any add-card buttons inside loaded HTML point to the
-            // runtime DOM id for this board (domId). Persisted HTML may
-            // contain the original client-side id which won't match.
             const loadedAddBtns = boardWrapper.querySelectorAll('.add-card-btn');
             loadedAddBtns.forEach(b => b.setAttribute('data-board', domId));
 
-            // Reconstruct in-memory data structure from saved DOM
             const cardsMap = new Map([
                 ['todo', []],
                 ['doing', []],
@@ -196,7 +160,6 @@ async function loadBoardsFromDatabase() {
                 ['delayed', []]
             ]);
 
-            // For every column-list, gather .card children
             const columnLists = boardWrapper.querySelectorAll('.column-list');
             columnLists.forEach(col => {
                 const colName = col.getAttribute('data-column') || 'todo';
@@ -218,13 +181,10 @@ async function loadBoardsFromDatabase() {
                 persistentId: board.id
             });
 
-            // Clear any pre-rendered card HTML from the saved `data` and
-            // re-render cards using `renderCard` so all event listeners
-            // (click, delete, drag) are properly attached.
+            // Clear any pre-rendered card HTML from the saved data and re-render cards
             const listsToRender = boardWrapper.querySelectorAll('.column-list');
             listsToRender.forEach(listEl => {
                 const colName = listEl.getAttribute('data-column') || 'todo';
-                // Remove any existing children that came from the saved HTML
                 listEl.innerHTML = '';
                 const cardsForCol = cardsMap.get(colName) || [];
                 cardsForCol.forEach(cardObj => {
@@ -239,20 +199,13 @@ async function loadBoardsFromDatabase() {
     });
 }
 
-// ============================================
-//----------------------------------------------------------------------------------------------------------
-
-// Main controls in the page
+//---Module functions---//
 const kbtn = document.getElementById('kanbanmaker');
 const kcontainer = document.getElementById('shared-canvas');
 
-// Runtime in-memory store for boards and cards.
-// Key: DOM id like 'board-123' -> value: { cards: Map(column->Array), title, persistentId }
-const boardsData = new Map(); // boardId -> { cards: Map(columnId -> [cards]) }
+const boardsData = new Map();
 
-
-// Load boards when page opens
-// App entry: when DOM is ready, check API and load boards if available.
+// Load Boards
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('Checking if server is running...');
     
@@ -266,7 +219,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// Create a new board when the "kanbanmaker" button is clicked
+//Createing a new board
 kbtn.addEventListener('click', async () => {
     // Create a unique ID for this board
     const boardId = 'board-' + Date.now();
@@ -347,18 +300,14 @@ kbtn.addEventListener('click', async () => {
     await persistBoardToDB(boardWrapper);
 });
 
-// ============================================
-// BOARD TITLE EDITING
-// ============================================
-
-// Small helper: open the title edit modal when edit button clicked
+// Board title editing
 function attachBoardTitleEditListener(boardId) {
     const boardElement = document.getElementById(boardId);
     const editBtn = boardElement.querySelector('.board-title-edit-btn');
     const titleText = boardElement.querySelector('.board-title-text');
     
     editBtn.addEventListener('click', (e) => {
-        e.stopPropagation(); // Prevent board from being dragged
+        e.stopPropagation();
         openBoardTitleEditModal(boardId, titleText);
     });
 }
@@ -438,7 +387,6 @@ function openBoardTitleEditModal(boardId, titleElement) {
     const form = modalOverlay.querySelector('#editBoardTitleForm');
     const input = modalOverlay.querySelector('#boardTitleInput');
     
-    // Focus and select the input
     input.focus();
     input.select();
 
@@ -483,12 +431,7 @@ function openBoardTitleEditModal(boardId, titleElement) {
     });
 }
 
-// ============================================
-// ADD CARD FUNCTIONALITY
-// ============================================
-
-
-
+// Card Functionality
 // Find all + Add Card buttons for the given board and attach handlers
 function attachAddCardListeners(boardId) {
     const buttons = document.querySelectorAll(`[data-board="${boardId}"].add-card-btn`);
@@ -596,20 +539,15 @@ function openAddCardModal(boardId, columnId) {
     });
 }
 
-// ============================================
-// RENDER CARD
-// ============================================
-
+// Card Rendering
 // Render a single card object into the DOM, attach all card handlers
-// This function must be used for cards coming from saved HTML so event
-// listeners and dataset attributes are created.
 function renderCard(boardId, columnId, card) {
     const columnList = document.querySelector(`#${boardId} [data-column="${columnId}"].column-list`);
     
     const cardElement = document.createElement('div');
     cardElement.className = 'card';
     cardElement.id = card.id;
-    cardElement.draggable = true; // Make card draggable
+    cardElement.draggable = true;
     cardElement.innerHTML = `
         <button class="card-delete-btn">×</button>
         <div class="card-title">${card.title}</div>
@@ -645,10 +583,7 @@ function renderCard(boardId, columnId, card) {
     updateBoardHeight(boardId);
 }
 
-// ============================================
-// CARD DETAILS MODAL
-// ============================================
-
+// Card details modal
 // Show a details modal for a card (view image, description, delete)
 function openCardDetailsModal(boardId, columnId, card) {
     const modalOverlay = document.createElement('div');
@@ -661,7 +596,7 @@ function openCardDetailsModal(boardId, columnId, card) {
     }
 
     const descriptionText = card.description || 'No description provided';
-    // Convert newlines to <br> tags and escape HTML
+    
     const formattedDescription = descriptionText
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
@@ -705,10 +640,7 @@ function openCardDetailsModal(boardId, columnId, card) {
     });
 }
 
-// ============================================
-// DELETE CARD
-// ============================================
-
+// Delete Card
 // Remove a card from both the in-memory store and the DOM, then persist
 async function deleteCard(boardId, columnId, cardId) {
     // Remove from data
@@ -732,10 +664,7 @@ async function deleteCard(boardId, columnId, cardId) {
     await persistBoardToDB(boardElement);
 }
 
-// ============================================
-// AUTO-EXPAND BOARD
-// ============================================
-
+// Board auto expand
 // Adjust the board's minHeight based on its columns' content
 function updateBoardHeight(boardId) {
     const boardWrapper = document.getElementById(boardId);
@@ -762,7 +691,6 @@ function updateBoardHeight(boardId) {
         const columnList = column.querySelector('.column-list');
         if (columnList) {
             // Calculate required height:
-            // column header (30px) + column list content + button (30px) + padding/gaps (40px)
             const contentHeight = columnList.scrollHeight + 100;
             maxHeight = Math.max(maxHeight, contentHeight);
         }
@@ -777,10 +705,7 @@ function updateBoardHeight(boardId) {
     );
 }
 
-// ============================================
-// MAKE ELEMENT MOVABLE
-// ============================================
-
+// Make element moveable
 // Global variable to track which card is being dragged
 let draggedCard = null;
 
@@ -835,7 +760,7 @@ function handleCardDrop(e) {
     const toBoardId = this.closest('.board-container').id;
     const toColumnId = this.getAttribute('data-column');
 
-    //Prevent dropping on a different board
+    // Prevent dropping on a different board
     if (fromBoardId !== toBoardId) {
         draggedCard = null;
         return;
