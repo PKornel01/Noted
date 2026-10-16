@@ -11,7 +11,7 @@ const PORT = process.env.Port || 3000;
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '5mb' }));
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
@@ -531,6 +531,125 @@ app.delete('/api/charts/:chartId', requireAuth, async (req, res) => {
         res.status(500).json({ error: 'Failed to delete chart' });
     }
 });
+
+function registerStoredHtmlModuleRoutes(route, moduleType, displayName) {
+    app.get(route, requireAuth, async (req, res) => {
+        let connection;
+        try {
+            const { projectId } = req.query;
+            if (!projectId) return res.status(400).json({ error: 'projectId is required' });
+
+            connection = await app.locals.pool.getConnection();
+            const [owned] = await connection.query(
+                'SELECT project_id FROM user_projects WHERE project_id = ? AND user_id = ?',
+                [projectId, req.session.userId]
+            );
+            if (owned.length === 0) return res.status(403).json({ error: 'Not authorized to view this project' });
+
+            const [modules] = await connection.query(
+                'SELECT id, title, data, xPos, yPos FROM modules WHERE project_id = ? AND module_type = ? ORDER BY id DESC',
+                [projectId, moduleType]
+            );
+            res.json(modules);
+        } catch (error) {
+            console.error(`Error fetching ${displayName.toLowerCase()} modules:`, error);
+            res.status(500).json({ error: `Failed to fetch ${displayName.toLowerCase()} modules` });
+        } finally {
+            if (connection) connection.release();
+        }
+    });
+
+    app.post(route, requireAuth, async (req, res) => {
+        let connection;
+        try {
+            const { projectId, xPos = 0, yPos = 0 } = req.body;
+            const title = typeof req.body.title === 'string' ? req.body.title.trim() : '';
+            const data = req.body.data === undefined ? '' : req.body.data;
+            if (!title) return res.status(400).json({ error: `${displayName} title required` });
+            if (typeof data !== 'string') return res.status(400).json({ error: `${displayName} data must be HTML text` });
+            if (!projectId) return res.status(400).json({ error: 'projectId is required' });
+
+            connection = await app.locals.pool.getConnection();
+            const [owned] = await connection.query(
+                'SELECT project_id FROM user_projects WHERE project_id = ? AND user_id = ?',
+                [projectId, req.session.userId]
+            );
+            if (owned.length === 0) return res.status(403).json({ error: 'Not authorized to add to this project' });
+
+            const [result] = await connection.query(
+                'INSERT INTO modules (project_id, title, data, xPos, yPos, module_type) VALUES (?, ?, ?, ?, ?, ?)',
+                [projectId, title, data, xPos, yPos, moduleType]
+            );
+            res.json({ id: result.insertId, title, data, xPos, yPos });
+        } catch (error) {
+            console.error(`Error creating ${displayName.toLowerCase()} module:`, error);
+            res.status(500).json({ error: `Failed to create ${displayName.toLowerCase()} module` });
+        } finally {
+            if (connection) connection.release();
+        }
+    });
+
+    app.put(`${route}/:moduleId`, requireAuth, async (req, res) => {
+        let connection;
+        try {
+            const { moduleId } = req.params;
+            const { xPos = 0, yPos = 0 } = req.body;
+            const title = typeof req.body.title === 'string' ? req.body.title.trim() : '';
+            const data = req.body.data === undefined ? '' : req.body.data;
+            if (!title) return res.status(400).json({ error: `${displayName} title required` });
+            if (typeof data !== 'string') return res.status(400).json({ error: `${displayName} data must be HTML text` });
+
+            connection = await app.locals.pool.getConnection();
+            const [owned] = await connection.query(
+                `SELECT m.id FROM modules m
+                 JOIN user_projects up ON up.project_id = m.project_id
+                 WHERE m.id = ? AND m.module_type = ? AND up.user_id = ?`,
+                [moduleId, moduleType, req.session.userId]
+            );
+            if (owned.length === 0) return res.status(403).json({ error: `Not authorized to edit this ${displayName.toLowerCase()}` });
+
+            await connection.query(
+                'UPDATE modules SET title = ?, data = ?, xPos = ?, yPos = ? WHERE id = ? AND module_type = ?',
+                [title, data, xPos, yPos, moduleId, moduleType]
+            );
+            res.json({ id: moduleId, title, data, xPos, yPos });
+        } catch (error) {
+            console.error(`Error updating ${displayName.toLowerCase()} module:`, error);
+            res.status(500).json({ error: `Failed to update ${displayName.toLowerCase()} module` });
+        } finally {
+            if (connection) connection.release();
+        }
+    });
+
+    app.delete(`${route}/:moduleId`, requireAuth, async (req, res) => {
+        let connection;
+        try {
+            const { moduleId } = req.params;
+            connection = await app.locals.pool.getConnection();
+            const [owned] = await connection.query(
+                `SELECT m.id FROM modules m
+                 JOIN user_projects up ON up.project_id = m.project_id
+                 WHERE m.id = ? AND m.module_type = ? AND up.user_id = ?`,
+                [moduleId, moduleType, req.session.userId]
+            );
+            if (owned.length === 0) return res.status(403).json({ error: `Not authorized to delete this ${displayName.toLowerCase()}` });
+
+            await connection.query(
+                'DELETE FROM modules WHERE id = ? AND module_type = ?',
+                [moduleId, moduleType]
+            );
+            res.json({ success: true, id: moduleId });
+        } catch (error) {
+            console.error(`Error deleting ${displayName.toLowerCase()} module:`, error);
+            res.status(500).json({ error: `Failed to delete ${displayName.toLowerCase()} module` });
+        } finally {
+            if (connection) connection.release();
+        }
+    });
+}
+
+registerStoredHtmlModuleRoutes('/api/notes', 'note', 'Note');
+registerStoredHtmlModuleRoutes('/api/pictures', 'picture', 'Picture');
 
 // ============================================
 // HEALTH CHECK

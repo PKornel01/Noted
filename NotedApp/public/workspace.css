@@ -119,6 +119,30 @@ body{
     margin: 0 auto;
 }
 
+#sidebar #notemaker,
+#sidebar #picturemaker {
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    width: 80px;
+    height: 90px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    color: var(--text);
+    font-size: 12px;
+    font-weight: bold;
+    background-color: rgb(69, 11, 102);
+    margin: 0 auto;
+}
+
+#sidebar #notemaker:hover,
+#sidebar #picturemaker:hover {
+    background-color: rgb(88, 19, 128);
+}
+
 #kanbanmaker img,
 #flowchartmaker img {
     width: 60px;
@@ -224,6 +248,7 @@ body{
         transform: none;
         width: calc(100% - 20px);
         flex-direction: row;
+        flex-wrap: wrap;
         justify-content: center;
         gap: 12px;
         padding: 8px;
@@ -245,7 +270,9 @@ body{
     }
 
     #sidebar #kanbanmaker,
-    #sidebar #flowchartmaker {
+    #sidebar #flowchartmaker,
+    #sidebar #notemaker,
+    #sidebar #picturemaker {
         width: min(44vw, 180px);
         height: 58px;
         flex-direction: row;
@@ -266,7 +293,7 @@ body{
         height: 100vh;
         height: 100dvh;
         margin-left: 0;
-        padding: calc(140px + env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+        padding: calc(220px + env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
     }
 
     .module-pane {
@@ -284,7 +311,9 @@ body{
     }
 
     #sidebar #kanbanmaker,
-    #sidebar #flowchartmaker {
+    #sidebar #flowchartmaker,
+    #sidebar #notemaker,
+    #sidebar #picturemaker {
         width: calc(50% - 4px);
         height: 52px;
         gap: 7px;
@@ -299,6 +328,6 @@ body{
     }
 
     #sheet {
-        padding-top: calc(126px + env(safe-area-inset-top));
+        padding-top: calc(210px + env(safe-area-inset-top));
     }
 }
