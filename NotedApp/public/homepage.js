@@ -79,7 +79,7 @@ async function initHomepage() {
     }
     const user = await res.json();
     currentUserId = user.id;
-    document.getElementById('nameInput').value = user.username || '';
+    setUsername(user.username || '');
 
     await loadProjects();
 };
@@ -298,9 +298,19 @@ document.addEventListener('click', (e) => {
 
 //Rename User
 const nameInput = document.getElementById( 'nameInput' );
+const navbarUserName = document.getElementById('navbarUserName');
+
+function setUsername(username) {
+    nameInput.value = username;
+    navbarUserName.textContent = username;
+}
+
 nameInput.addEventListener('blur', async () => {
     const newName = nameInput.value.trim();
-    if (!newName) return;
+    if (!newName) {
+        nameInput.value = navbarUserName.textContent;
+        return;
+    }
 
     try {
         const res = await fetch('/api/me', {
@@ -311,7 +321,9 @@ nameInput.addEventListener('blur', async () => {
         if (!res.ok) {
             throw new Error('Failed to update username');
         }
+        setUsername(newName);
     } catch (error) {
+        nameInput.value = navbarUserName.textContent;
         console.error( 'Error updating username:', error);
     }
 });
