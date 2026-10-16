@@ -2,10 +2,42 @@ const profileBtn = document.getElementById('profileBtn');
 const dropdown = document.getElementById('profileDropdown');
 const projectsContainer = document.getElementById('projects-container');
 const createBtn = document.getElementById('create-btn')
+const deleteProjectDialog = document.getElementById('delete-project-dialog');
+const deleteProjectName = document.getElementById('delete-project-name');
+const cancelProjectDeleteBtn = document.getElementById('cancel-project-delete');
+const confirmProjectDeleteBtn = document.getElementById('confirm-project-delete');
 let currentUserId = null;
 let draggedProjectId = null;
 let suppressProjectClickTimer = null;
 let suppressProjectClickUntil = 0;
+
+function confirmProjectDeletion(projectName) {
+    deleteProjectName.textContent = projectName;
+    deleteProjectDialog.returnValue = '';
+
+    const confirmation = new Promise((resolve) => {
+        deleteProjectDialog.addEventListener('close', () => {
+            resolve(deleteProjectDialog.returnValue === 'confirm');
+        }, { once: true });
+    });
+
+    deleteProjectDialog.showModal();
+    return confirmation;
+}
+
+cancelProjectDeleteBtn.addEventListener('click', () => {
+    deleteProjectDialog.close('cancel');
+});
+
+confirmProjectDeleteBtn.addEventListener('click', () => {
+    deleteProjectDialog.close('confirm');
+});
+
+deleteProjectDialog.addEventListener('click', (e) => {
+    if (e.target === deleteProjectDialog) {
+        deleteProjectDialog.close('cancel');
+    }
+});
 
 function projectOrderStorageKey() {
     return `noted-project-order:${currentUserId}`;
@@ -157,7 +189,7 @@ function createProjectBox(project) {
     deleteBtn.addEventListener('click', async (e) => {
         e.stopPropagation();
 
-        const confirmed = confirm(`Delete "${title.textContent}"? This can't be undone.`);
+        const confirmed = await confirmProjectDeletion(title.textContent);
         if (!confirmed) {
             return;
         }

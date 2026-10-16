@@ -45,6 +45,18 @@
         </div>
     </div>
 
+    <dialog id="delete-project-dialog" class="delete-project-dialog" aria-labelledby="delete-project-heading" aria-describedby="delete-project-description">
+        <div class="delete-dialog-icon" aria-hidden="true">!</div>
+        <h2 id="delete-project-heading">Delete project?</h2>
+        <p id="delete-project-description">
+            Are you sure you want to delete <strong id="delete-project-name"></strong>? This action can't be undone.
+        </p>
+        <div class="delete-dialog-actions">
+            <button id="cancel-project-delete" class="delete-dialog-cancel" type="button" autofocus>Cancel</button>
+            <button id="confirm-project-delete" class="delete-dialog-confirm" type="button">Delete project</button>
+        </div>
+    </dialog>
+
     <script src="homepage.js"></script>
 </body>
 </html>

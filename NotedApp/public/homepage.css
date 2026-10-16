@@ -372,6 +372,98 @@ a{
     color: #5b8cff;
 }
 
+.delete-project-dialog {
+    width: min(440px, calc(100% - 32px));
+    margin: auto;
+    padding: 30px;
+    color: var(--text);
+    text-align: center;
+    background: linear-gradient(145deg, rgba(38, 20, 67, 0.97), rgba(10, 14, 48, 0.97));
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 24px;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(18px);
+}
+
+.delete-project-dialog::backdrop {
+    background: rgba(5, 7, 25, 0.68);
+    backdrop-filter: blur(7px);
+}
+
+.delete-dialog-icon {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 16px;
+    color: #ffd6e8;
+    font-size: 1.6rem;
+    font-weight: 800;
+    background: rgba(255, 45, 158, 0.16);
+    border: 1px solid rgba(255, 45, 158, 0.42);
+    border-radius: 50%;
+}
+
+.delete-project-dialog h2 {
+    margin-bottom: 10px;
+    font-size: 1.4rem;
+}
+
+.delete-project-dialog p {
+    color: var(--muted);
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.delete-project-dialog strong {
+    color: var(--text);
+}
+
+.delete-dialog-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 26px;
+}
+
+.delete-dialog-actions button {
+    min-height: 44px;
+    padding: 0 18px;
+    color: var(--text);
+    font: inherit;
+    font-weight: 600;
+    border: 1px solid var(--card-border);
+    border-radius: 50px;
+    cursor: pointer;
+    transition: transform 0.15s, background 0.2s, border-color 0.2s;
+}
+
+.delete-dialog-actions button:hover {
+    transform: translateY(-1px);
+}
+
+.delete-dialog-actions button:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+}
+
+.delete-dialog-cancel {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.delete-dialog-cancel:hover {
+    background: rgba(255, 255, 255, 0.14);
+}
+
+.delete-dialog-confirm {
+    background: linear-gradient(100deg, #e0207a, #d63090);
+}
+
+.delete-dialog-confirm:hover {
+    border-color: rgba(255, 255, 255, 0.35);
+    background: linear-gradient(100deg, #c81868, #b82178);
+}
+
 @media (max-width: 760px) {
     .glass-nav {
         top: 12px;
@@ -438,6 +530,19 @@ a{
     #create-btn {
         width: 44px;
         height: 44px;
+    }
+
+    .delete-project-dialog {
+        padding: 26px 20px;
+        border-radius: 20px;
+    }
+
+    .delete-dialog-actions {
+        gap: 8px;
+    }
+
+    .delete-dialog-actions button {
+        padding: 0 14px;
     }
 
     #create-btn:focus,
