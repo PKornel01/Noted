@@ -27,6 +27,44 @@ body{
     overflow: hidden;
 }
 
+#workspace-brand {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 11;
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 4px 8px;
+    color: var(--text);
+    font-size: clamp(18px, 4vw, 22px);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+#workspace-brand:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 2px;
+    border-radius: 6px;
+}
+
+#workspace-home-indicator {
+    max-width: 0;
+    margin-left: 0;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateX(-5px);
+    transition: max-width 180ms ease, margin-left 180ms ease, opacity 180ms ease, transform 180ms ease;
+}
+
+#workspace-brand:hover #workspace-home-indicator,
+#workspace-brand:focus-visible #workspace-home-indicator {
+    max-width: 1em;
+    margin-left: 6px;
+    opacity: 1;
+    transform: translateX(0);
+}
+
 #sidebar {
     left: 20px;
     top: 50%;
@@ -181,7 +219,7 @@ body{
     }
 
     #sidebar {
-        top: max(10px, env(safe-area-inset-top));
+        top: calc(44px + env(safe-area-inset-top));
         left: max(10px, env(safe-area-inset-left));
         transform: none;
         width: calc(100% - 20px);
@@ -192,6 +230,18 @@ body{
         border: 1px solid rgba(255, 255, 255, 0.12);
         border-radius: 16px;
         backdrop-filter: blur(15px);
+    }
+
+    #workspace-brand {
+        top: max(4px, env(safe-area-inset-top));
+        left: max(2px, env(safe-area-inset-left));
+    }
+
+    #workspace-home-indicator {
+        max-width: 1em;
+        margin-left: 6px;
+        opacity: 1;
+        transform: translateX(0);
     }
 
     #sidebar #kanbanmaker,
@@ -216,7 +266,7 @@ body{
         height: 100vh;
         height: 100dvh;
         margin-left: 0;
-        padding: calc(86px + env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+        padding: calc(140px + env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
     }
 
     .module-pane {
@@ -228,6 +278,7 @@ body{
 
 @media (max-width: 420px) {
     #sidebar {
+        top: calc(42px + env(safe-area-inset-top));
         gap: 8px;
         padding: 7px;
     }
@@ -248,6 +299,6 @@ body{
     }
 
     #sheet {
-        padding-top: calc(78px + env(safe-area-inset-top));
+        padding-top: calc(126px + env(safe-area-inset-top));
     }
 }
