@@ -17,7 +17,9 @@ let moduleDragPointerY = null;
 let moduleAutoScrollFrame = null;
 
 function bringModuleToFront(element) {
-    const modules = document.querySelectorAll('#shared-canvas > .board-container, #shared-canvas > .chart-container');
+    const modules = document.querySelectorAll(
+        '#shared-canvas > .board-container, #shared-canvas > .chart-container, #shared-canvas > .note-module, #shared-canvas > .picture-module'
+    );
     const highestZIndex = Array.from(modules).reduce((highest, module) => {
         const zIndex = Number.parseInt(module.style.zIndex, 10) || 0;
         return Math.max(highest, zIndex);

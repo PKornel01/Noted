@@ -87,11 +87,17 @@ function createTestPool() {
       }
       if (statement.startsWith('SELECT m.id FROM modules m JOIN user_projects up')) {
         const module = state.modules.find((entry) => entry.id === Number(params[0]));
-        const owned = module && state.userProjects.some((link) => link.project_id === module.project_id && link.user_id === Number(params[1]));
+        const moduleType = params.length === 3 ? params[1] : null;
+        const userId = params.length === 3 ? params[2] : params[1];
+        const owned = module
+          && (!moduleType || module.module_type === moduleType)
+          && state.userProjects.some((link) => link.project_id === module.project_id && link.user_id === Number(userId));
         return [owned ? [{ id: module.id }] : []];
       }
       if (statement.startsWith('SELECT id, title, data, xPos, yPos FROM modules WHERE project_id')) {
-        const moduleType = statement.includes("module_type = 'flowchart'") ? 'flowchart' : 'kanban';
+        const moduleType = params.length > 1
+          ? params[1]
+          : statement.includes("module_type = 'flowchart'") ? 'flowchart' : 'kanban';
         return [state.modules
           .filter((entry) => entry.project_id === Number(params[0]) && entry.module_type === moduleType)
           .sort((a, b) => b.id - a.id)
@@ -99,19 +105,26 @@ function createTestPool() {
       }
       if (statement.startsWith('INSERT INTO modules ')) {
         const [project_id, title, data, xPos, yPos] = params;
-        const module_type = statement.includes("'flowchart'") ? 'flowchart' : 'kanban';
+        const module_type = params.length > 5
+          ? params[5]
+          : statement.includes("'flowchart'") ? 'flowchart' : 'kanban';
         const module = { id: state.nextModuleId++, project_id: Number(project_id), title, data, xPos, yPos, module_type };
         state.modules.push(module);
         return [{ insertId: module.id }];
       }
       if (statement.startsWith('UPDATE modules SET title = ?')) {
         const module = state.modules.find((entry) => entry.id === Number(params[4]));
-        if (module) Object.assign(module, { title: params[0], data: params[1], xPos: params[2], yPos: params[3] });
+        const moduleType = params[5];
+        if (module && (!moduleType || module.module_type === moduleType)) {
+          Object.assign(module, { title: params[0], data: params[1], xPos: params[2], yPos: params[3] });
+        }
         return [{ affectedRows: module ? 1 : 0 }];
       }
       if (statement.startsWith('DELETE FROM modules WHERE id = ?')) {
         const priorLength = state.modules.length;
-        state.modules = state.modules.filter((module) => module.id !== Number(params[0]));
+        const moduleType = params[1];
+        state.modules = state.modules.filter((module) =>
+          module.id !== Number(params[0]) || (moduleType && module.module_type !== moduleType));
         return [{ affectedRows: priorLength - state.modules.length }];
       }
 
@@ -191,6 +204,19 @@ test('health endpoint, static frontend, and CORS middleware', async () => {
     assert.equal(frontend.status, 200);
     assert.match(frontend.headers['content-type'], /text\/html/);
     assert.match(frontend.body, /<html/i);
+
+    const workspace = await request(port, '/workspace.html');
+    assert.equal(workspace.status, 200);
+    assert.match(workspace.body, /noteModule\.js/);
+    assert.match(workspace.body, /pictureModule\.css/);
+    for (const asset of [
+      '/noteModule.js',
+      '/noteModule.css',
+      '/pictureModule.js',
+      '/pictureModule.css',
+    ]) {
+      assert.equal((await request(port, asset)).status, 200, `${asset} should be served`);
+    }
 
     const preflight = await request(port, '/api/me', {
       method: 'OPTIONS',
@@ -370,6 +396,85 @@ test('flowchart routes validate input and support authorized CRUD operations', a
     assert.equal((await request(port, `/api/charts/${created.body.id}`, { method: 'DELETE', headers: { Cookie: otherCookie } })).status, 403);
     assert.equal((await request(port, `/api/charts/${created.body.id}`, { method: 'DELETE', headers: { Cookie: ownerCookie } })).body.success, true);
     assert.equal((await request(port, `/api/charts/${created.body.id}`, { method: 'DELETE', headers: { Cookie: ownerCookie } })).status, 403);
+  });
+});
+
+test('note and picture routes persist HTML modules with project ownership checks', async () => {
+  await withServer(async ({ port, pool }) => {
+    for (const { route, type, title } of [
+      { route: 'notes', type: 'note', title: 'Meeting note' },
+      { route: 'pictures', type: 'picture', title: 'Project picture' },
+    ]) {
+      assert.equal((await request(port, `/api/${route}`)).status, 401);
+    }
+
+    const owner = await register(port, { username: 'module-owner', email: 'module-owner@example.com' });
+    const ownerCookie = sessionCookie(owner);
+    const other = await register(port, { username: 'module-other', email: 'module-other@example.com' });
+    const otherCookie = sessionCookie(other);
+    const project = await request(port, '/api/projects', {
+      method: 'POST',
+      headers: { Cookie: ownerCookie },
+      body: { project_name: 'HTML modules' },
+    });
+    const projectId = project.body.id;
+
+    for (const { route, type, title } of [
+      { route: 'notes', type: 'note', title: 'Meeting note' },
+      { route: 'pictures', type: 'picture', title: 'Project picture' },
+    ]) {
+      const endpoint = `/api/${route}`;
+      assert.equal((await request(port, endpoint, { headers: { Cookie: ownerCookie } })).status, 400);
+      assert.equal((await request(port, endpoint, {
+        method: 'POST', headers: { Cookie: ownerCookie },
+        body: { title, data: 12, projectId },
+      })).status, 400);
+      assert.equal((await request(port, endpoint, {
+        method: 'POST', headers: { Cookie: otherCookie },
+        body: { title, data: '<p>private</p>', projectId },
+      })).status, 403);
+
+      const created = await request(port, endpoint, {
+        method: 'POST', headers: { Cookie: ownerCookie },
+        body: { title, data: '<p class="saved-content">Initial HTML</p>', projectId, xPos: 25, yPos: 45 },
+      });
+      assert.equal(created.status, 200);
+      assert.deepEqual(created.body, {
+        id: created.body.id,
+        title,
+        data: '<p class="saved-content">Initial HTML</p>',
+        xPos: 25,
+        yPos: 45,
+      });
+      const stored = pool.state.modules.find((module) => module.id === created.body.id);
+      assert.equal(stored.module_type, type);
+
+      const loaded = await request(port, `${endpoint}?projectId=${projectId}`, { headers: { Cookie: ownerCookie } });
+      assert.equal(loaded.body.find((module) => module.id === created.body.id).data, '<p class="saved-content">Initial HTML</p>');
+      assert.equal((await request(port, `${endpoint}?projectId=${projectId}`, { headers: { Cookie: otherCookie } })).status, 403);
+      assert.equal((await request(port, `/api/${route === 'notes' ? 'pictures' : 'notes'}/${created.body.id}`, {
+        method: 'PUT', headers: { Cookie: ownerCookie },
+        body: { title, data: '<p>wrong type</p>' },
+      })).status, 403);
+      assert.equal((await request(port, `${endpoint}/${created.body.id}`, {
+        method: 'PUT', headers: { Cookie: ownerCookie },
+        body: { title: '', data: '<p>Updated</p>' },
+      })).status, 400);
+
+      const updated = await request(port, `${endpoint}/${created.body.id}`, {
+        method: 'PUT', headers: { Cookie: ownerCookie },
+        body: { title: `Updated ${title}`, data: '<p class="saved-content">Updated HTML</p>', xPos: 35, yPos: 55 },
+      });
+      assert.equal(updated.status, 200);
+      assert.equal(updated.body.title, `Updated ${title}`);
+      assert.equal(pool.state.modules.find((module) => module.id === created.body.id).data, '<p class="saved-content">Updated HTML</p>');
+      assert.equal((await request(port, `${endpoint}/${created.body.id}`, {
+        method: 'DELETE', headers: { Cookie: otherCookie },
+      })).status, 403);
+      assert.equal((await request(port, `${endpoint}/${created.body.id}`, {
+        method: 'DELETE', headers: { Cookie: ownerCookie },
+      })).body.success, true);
+    }
   });
 });
 

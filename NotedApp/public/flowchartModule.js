@@ -171,9 +171,13 @@ async function loadChartsFromDatabase() {
             chartWrapper.innerHTML = `
             <div class="chart">
                 <div class="chartHandle">
+                        <div class="chart-title-group">
+                            <span class="chart-title-text"></span>
+                            <button class="board-title-edit-btn headerBtn chart-title-edit-btn" type="button" title="Click to edit chart name" aria-label="Edit chart title">✎</button>
+                            <button class="board-delete-btn headerBtn" id="close-btn" type="button" title="Remove" aria-label="Delete chart">🗑</button>
+                        </div>
                         <button class="headerBtn" id="obj-btn" type="button" title="Add Object">+ Add Object</button>
                         <button class="headerBtn" id="connect-btn" type="button" title="Connect">🔗 Connect: Off</button>
-                        <button class="headerBtn" id="close-btn" type="button" title="Remove">🗑</button>
                 </div>
                 <div class="chart-body">
                     ${bodyContent}
@@ -188,6 +192,7 @@ async function loadChartsFromDatabase() {
             bringModuleToFront(chartWrapper);
 
             chartsData.set(domId, { persistentId: chart.id, title: chart.title });
+            chartWrapper.querySelector('.chart-title-text').textContent = chart.title || 'Untitled Chart';
             makeInteractive(chartWrapper);
         }
     });
@@ -214,6 +219,59 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log('Charts loaded successfully');
     }
 });
+
+function openChartTitleEditModal(chartWrapper) {
+    const metadata = chartsData.get(chartWrapper.id);
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="form-modal-content">
+            <h2>Edit Chart Title</h2>
+            <form>
+                <div class="form-group">
+                    <label for="boardTitleInput">Chart Title: (Max 50 characters)</label>
+                    <input type="text" id="boardTitleInput" maxlength="50" required>
+                </div>
+                <div class="form-buttons">
+                    <button type="button" class="form-cancel-btn">Cancel</button>
+                    <button type="submit" class="form-submit-btn">Save</button>
+                </div>
+            </form>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    const input = modal.querySelector('#boardTitleInput');
+    input.value = metadata.title || 'Untitled Chart';
+    input.focus();
+    input.select();
+
+    const close = () => modal.remove();
+    modal.querySelector('.form-cancel-btn').addEventListener('click', close);
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) close();
+    });
+    modal.querySelector('form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const newTitle = input.value.trim();
+        if (!newTitle) return;
+
+        const previousTitle = metadata.title;
+        metadata.title = newTitle;
+        chartWrapper.querySelector('.chart-title-text').textContent = newTitle;
+        try {
+            const result = await persistChartToDB(chartWrapper);
+            if (!result) throw new Error('The chart title could not be saved.');
+            close();
+        } catch (error) {
+            metadata.title = previousTitle;
+            chartWrapper.querySelector('.chart-title-text').textContent = previousTitle || 'Untitled Chart';
+            console.error('Error saving chart title:', error);
+            alert(`Could not save chart title: ${error.message}`);
+        }
+    });
+}
 
 
 
@@ -243,9 +301,13 @@ fbtn.addEventListener('click', async () => {
     chartWrapper.innerHTML = `
     <div class="chart">
         <div class="chartHandle">
+                <div class="chart-title-group">
+                    <span class="chart-title-text"></span>
+                    <button class="board-title-edit-btn headerBtn chart-title-edit-btn" type="button" title="Click to edit chart name" aria-label="Edit chart title">✎</button>
+                    <button class="board-delete-btn headerBtn" id="close-btn" type="button" title="Remove" aria-label="Delete chart">🗑</button>
+                </div>
                 <button class="headerBtn" id="obj-btn" type="button" title="Add Object">+ Add Object</button>
                 <button class="headerBtn" id="connect-btn" type="button" title="Connect">🔗 Connect: Off</button>
-                <button class="headerBtn" id="close-btn" type="button" title="Remove">🗑</button>
         </div>
         <div class="chart-body">
             <svg class="connections-layer">
@@ -265,6 +327,7 @@ fbtn.addEventListener('click', async () => {
     bringModuleToFront(chartWrapper);
 
     chartsData.set(chartId, { title: 'Untitled Chart' });
+    chartWrapper.querySelector('.chart-title-text').textContent = 'Untitled Chart';
     makeInteractive(chartWrapper);
     await persistChartToDB(chartWrapper);
 });
@@ -273,6 +336,7 @@ function makeInteractive(chartWrapper) {
     const header = chartWrapper.querySelector('.chartHandle');
     const handle = chartWrapper.querySelector('.resize-handle');
     const closeBtn = chartWrapper.querySelector('#close-btn');
+    const titleEditBtn = chartWrapper.querySelector('.chart-title-edit-btn');
     const objBtn = chartWrapper.querySelector('#obj-btn');
     const connectBtn = chartWrapper.querySelector('#connect-btn');
     const workspace = chartWrapper.querySelector('.chart-body');
@@ -372,6 +436,10 @@ function makeInteractive(chartWrapper) {
 
     header.addEventListener('pointerdown', startMove);
     handle.addEventListener('pointerdown', startResize);
+    titleEditBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openChartTitleEditModal(chartWrapper);
+    });
     closeBtn.addEventListener('click', () => { 
         chartWrapper.remove();
         deleteChartFromUI(chartWrapper.id);

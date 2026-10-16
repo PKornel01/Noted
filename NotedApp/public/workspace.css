@@ -27,6 +27,44 @@ body{
     overflow: hidden;
 }
 
+#workspace-brand {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 11;
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 4px 8px;
+    color: var(--text);
+    font-size: clamp(18px, 4vw, 22px);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+#workspace-brand:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 2px;
+    border-radius: 6px;
+}
+
+#workspace-home-indicator {
+    max-width: 0;
+    margin-left: 0;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateX(-5px);
+    transition: max-width 180ms ease, margin-left 180ms ease, opacity 180ms ease, transform 180ms ease;
+}
+
+#workspace-brand:hover #workspace-home-indicator,
+#workspace-brand:focus-visible #workspace-home-indicator {
+    max-width: 1em;
+    margin-left: 6px;
+    opacity: 1;
+    transform: translateX(0);
+}
+
 #sidebar {
     left: 20px;
     top: 50%;
@@ -79,6 +117,30 @@ body{
     font-weight: bold;
     background-color: rgb(69, 11, 102);
     margin: 0 auto;
+}
+
+#sidebar #notemaker,
+#sidebar #picturemaker {
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    width: 80px;
+    height: 90px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    color: var(--text);
+    font-size: 12px;
+    font-weight: bold;
+    background-color: rgb(69, 11, 102);
+    margin: 0 auto;
+}
+
+#sidebar #notemaker:hover,
+#sidebar #picturemaker:hover {
+    background-color: rgb(88, 19, 128);
 }
 
 #kanbanmaker img,
@@ -181,11 +243,12 @@ body{
     }
 
     #sidebar {
-        top: max(10px, env(safe-area-inset-top));
+        top: calc(44px + env(safe-area-inset-top));
         left: max(10px, env(safe-area-inset-left));
         transform: none;
         width: calc(100% - 20px);
         flex-direction: row;
+        flex-wrap: wrap;
         justify-content: center;
         gap: 12px;
         padding: 8px;
@@ -194,8 +257,22 @@ body{
         backdrop-filter: blur(15px);
     }
 
+    #workspace-brand {
+        top: max(4px, env(safe-area-inset-top));
+        left: max(2px, env(safe-area-inset-left));
+    }
+
+    #workspace-home-indicator {
+        max-width: 1em;
+        margin-left: 6px;
+        opacity: 1;
+        transform: translateX(0);
+    }
+
     #sidebar #kanbanmaker,
-    #sidebar #flowchartmaker {
+    #sidebar #flowchartmaker,
+    #sidebar #notemaker,
+    #sidebar #picturemaker {
         width: min(44vw, 180px);
         height: 58px;
         flex-direction: row;
@@ -216,7 +293,7 @@ body{
         height: 100vh;
         height: 100dvh;
         margin-left: 0;
-        padding: calc(86px + env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+        padding: calc(220px + env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
     }
 
     .module-pane {
@@ -228,12 +305,15 @@ body{
 
 @media (max-width: 420px) {
     #sidebar {
+        top: calc(42px + env(safe-area-inset-top));
         gap: 8px;
         padding: 7px;
     }
 
     #sidebar #kanbanmaker,
-    #sidebar #flowchartmaker {
+    #sidebar #flowchartmaker,
+    #sidebar #notemaker,
+    #sidebar #picturemaker {
         width: calc(50% - 4px);
         height: 52px;
         gap: 7px;
@@ -248,6 +328,6 @@ body{
     }
 
     #sheet {
-        padding-top: calc(78px + env(safe-area-inset-top));
+        padding-top: calc(210px + env(safe-area-inset-top));
     }
 }

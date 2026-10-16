@@ -1,0 +1,102 @@
+.note-module {
+    position: absolute;
+    z-index: 1;
+    width: min(320px, calc(100vw - 48px));
+    overflow: hidden;
+    color: var(--text);
+    background: rgba(53, 17, 87, 0.78);
+    border: 1.5px solid var(--card-border);
+    border-radius: 14px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
+}
+
+.note-module-handle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 42px;
+    padding: 7px 10px;
+    background: var(--handle-purple);
+    font-weight: 700;
+    touch-action: none;
+    cursor: move;
+}
+
+.note-module-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.note-module-handle .board-title-edit-btn {
+    flex: 0 0 auto;
+}
+
+.note-module-save {
+    padding: 7px 12px;
+    border: 0;
+    border-radius: 6px;
+    color: var(--text);
+    cursor: pointer;
+}
+
+.note-module-content {
+    min-height: 190px;
+    max-height: 48vh;
+    overflow: auto;
+    padding: 14px;
+    color: var(--text);
+    background: var(--card);
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+    outline: none;
+}
+
+.note-module-content:empty::before {
+    color: var(--muted);
+    content: attr(data-placeholder);
+    pointer-events: none;
+}
+
+.note-module-content:focus {
+    box-shadow: inset 0 0 0 1px var(--purple);
+}
+
+.note-module-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 10px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.note-module-save {
+    min-width: 58px;
+    background: linear-gradient(90deg, #e0207a, #d63090);
+    font-weight: 700;
+}
+
+.note-module-save:disabled {
+    cursor: wait;
+    opacity: 0.7;
+}
+
+.note-module-save:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 2px;
+}
+
+@media (max-width: 760px) {
+    .note-module {
+        width: min(320px, calc(100vw - 40px));
+    }
+
+    .note-module-content {
+        min-height: 150px;
+        max-height: 42vh;
+    }
+}
