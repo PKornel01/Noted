@@ -401,9 +401,15 @@ function makeInteractive(chartWrapper) {
         e.stopPropagation();
         openChartTitleEditModal(chartWrapper);
     });
-    closeBtn.addEventListener('click', () => { 
+    closeBtn.addEventListener('click', async () => {
+        const meta = chartsData.get(chartWrapper.id) || {};
+        const confirmed = await confirmWorkspaceDeletion(
+            'Delete Flowchart?',
+            `Are you sure you want to delete "${meta.title || 'this flowchart'}" and all its objects? This cannot be undone.`
+        );
+        if (!confirmed) return;
         chartWrapper.remove();
-        deleteChartFromUI(chartWrapper.id);
+        await deleteChartFromUI(chartWrapper.id);
     });
 
     connectBtn.addEventListener("click", () => {

@@ -16,6 +16,7 @@ const sidebar = document.getElementById('sidebar');
 const workspaceBrand = document.getElementById('workspace-brand');
 const workspaceInfoButton = document.getElementById('workspace-info-button');
 const workspaceInfoDialog = document.getElementById('workspace-info-dialog');
+const deleteConfirmDialog = document.getElementById('delete-confirm-dialog');
 const initialPixelRatio = window.devicePixelRatio || 1;
 let moduleDragPointerX = null;
 let moduleDragPointerY = null;
@@ -48,6 +49,35 @@ workspaceInfoDialog.addEventListener('click', (event) => {
 workspaceInfoDialog.querySelectorAll('.workspace-info-tab').forEach((tab) => {
     tab.addEventListener('click', () => setWorkspaceInfoDevice(tab.dataset.device));
 });
+
+deleteConfirmDialog.querySelector('.delete-confirm-cancel').addEventListener('click', () => {
+    deleteConfirmDialog.close('cancel');
+});
+
+deleteConfirmDialog.querySelector('.delete-confirm-submit').addEventListener('click', () => {
+    deleteConfirmDialog.close('confirm');
+});
+
+deleteConfirmDialog.addEventListener('click', (event) => {
+    if (event.target === deleteConfirmDialog) deleteConfirmDialog.close('cancel');
+});
+
+function confirmWorkspaceDeletion(title, message) {
+    if (deleteConfirmDialog.open) {
+        return Promise.reject(new Error('A deletion confirmation is already open.'));
+    }
+
+    deleteConfirmDialog.querySelector('#delete-confirm-title').textContent = title;
+    deleteConfirmDialog.querySelector('#delete-confirm-message').textContent = message;
+    deleteConfirmDialog.returnValue = '';
+
+    return new Promise((resolve) => {
+        deleteConfirmDialog.addEventListener('close', () => {
+            resolve(deleteConfirmDialog.returnValue === 'confirm');
+        }, { once: true });
+        deleteConfirmDialog.showModal();
+    });
+}
 
 function setWorkspaceInfoDevice(device) {
     workspaceInfoDialog.querySelectorAll('.workspace-info-tab').forEach((tab) => {

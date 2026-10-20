@@ -124,6 +124,11 @@ function attachPictureModuleEvents(wrapper) {
     });
     wrapper.querySelector('.picture-module-delete').addEventListener('click', async () => {
         const metadata = pictureModules.get(wrapper.id);
+        const confirmed = await confirmWorkspaceDeletion(
+            'Delete picture module?',
+            `Are you sure you want to delete "${metadata.title}"? This cannot be undone.`
+        );
+        if (!confirmed) return;
         try {
             if (metadata.savePromise) await metadata.savePromise;
             if (metadata.persistentId) await deletePictureRecord(metadata.persistentId);

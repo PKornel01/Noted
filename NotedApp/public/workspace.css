@@ -325,6 +325,66 @@ body{
     color: #ff70b6;
 }
 
+#delete-confirm-dialog {
+    width: min(420px, calc(100vw - 32px));
+    max-width: none;
+    max-height: min(80vh, 80dvh);
+    margin: auto;
+    padding: 22px;
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    color: var(--text);
+    background: rgba(31, 12, 55, 0.98);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+}
+
+#delete-confirm-dialog::backdrop {
+    background: rgba(0, 0, 0, 0.68);
+    backdrop-filter: blur(3px);
+}
+
+#delete-confirm-dialog h2 {
+    margin-bottom: 10px;
+}
+
+#delete-confirm-message {
+    color: var(--muted);
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.delete-confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.delete-confirm-actions button {
+    min-height: 42px;
+    padding: 9px 16px;
+    border: 0;
+    border-radius: 50px;
+    color: var(--text);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.delete-confirm-cancel {
+    background: rgba(255, 255, 255, 0.16);
+}
+
+.delete-confirm-submit {
+    background: linear-gradient(90deg, #e0207a, #d63090);
+}
+
+.delete-confirm-actions button:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 2px;
+}
+
 #kanbanmaker img,
 #flowchartmaker img,
 #notemaker img,
@@ -502,6 +562,12 @@ body{
         width: calc(100vw - 24px);
         max-height: calc(100dvh - 24px);
         padding: 16px;
+    }
+
+    #delete-confirm-dialog {
+        width: calc(100vw - 24px);
+        max-height: calc(100dvh - 24px);
+        padding: 18px;
     }
 
     .workspace-info-header h2 {

@@ -286,7 +286,7 @@ kbtn.addEventListener('click', async () => {
             ['done', []],
             ['delayed', []],
         ]),
-        title: 'Drag Board Here'
+        title: 'Title'
     });
     
         // Attach event listeners for controls and add-card buttons
@@ -339,6 +339,12 @@ function attachBoardControlsListeners(boardId) {
 
 async function deleteBoardFromUI(boardDomId) {
     const meta = boardsData.get(boardDomId) || {};
+    const confirmed = await confirmWorkspaceDeletion(
+        'Delete Kanban board?',
+        `Are you sure you want to delete "${meta.title || 'this board'}" and all its cards? This cannot be undone.`
+    );
+    if (!confirmed) return;
+
     const dbId = meta.persistentId;
 
     // Remove DOM immediately for responsiveness
@@ -681,8 +687,7 @@ function openCardDetailsModal(boardId, columnId, card) {
 
     modalOverlay.querySelector('.form-cancel-btn').addEventListener('click', closeModal);
     modalOverlay.querySelector('.modal-delete-btn').addEventListener('click', async () => {
-        closeModal();
-        await deleteCard(boardId, columnId, card.id);
+        if (await deleteCard(boardId, columnId, card.id)) closeModal();
     });
 
     modalOverlay.addEventListener('click', (e) => {
@@ -694,6 +699,13 @@ function openCardDetailsModal(boardId, columnId, card) {
 // Delete Card
 // Remove a card from both the in-memory store and the DOM, then persist
 async function deleteCard(boardId, columnId, cardId) {
+    const cardTitle = document.getElementById(cardId)?.querySelector('.card-title')?.textContent || 'this card';
+    const confirmed = await confirmWorkspaceDeletion(
+        'Delete Kanban card?',
+        `Are you sure you want to delete "${cardTitle}"? This cannot be undone.`
+    );
+    if (!confirmed) return false;
+
     // Remove from data
     const cards = boardsData.get(boardId).cards.get(columnId);
     const index = cards.findIndex(c => c.id === cardId);
@@ -713,6 +725,7 @@ async function deleteCard(boardId, columnId, cardId) {
     // Save board to database
     const boardElement = document.getElementById(boardId);
     await persistBoardToDB(boardElement);
+    return true;
 }
 
 // Board auto expand
