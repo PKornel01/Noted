@@ -12,9 +12,51 @@ if (!projectId) {
 }
 
 const sheetEl = document.getElementById('sheet');
+const sidebar = document.getElementById('sidebar');
+const workspaceBrand = document.getElementById('workspace-brand');
+const workspaceInfoButton = document.getElementById('workspace-info-button');
+const workspaceInfoDialog = document.getElementById('workspace-info-dialog');
+const initialPixelRatio = window.devicePixelRatio || 1;
 let moduleDragPointerX = null;
 let moduleDragPointerY = null;
 let moduleAutoScrollFrame = null;
+
+function updateSidebarZoomCompensation() {
+    const scale = initialPixelRatio / (window.devicePixelRatio || initialPixelRatio);
+    [sidebar, workspaceBrand, workspaceInfoButton].forEach((element) => {
+        if (element) element.style.setProperty('--sidebar-scale', String(scale));
+    });
+}
+
+updateSidebarZoomCompensation();
+window.addEventListener('resize', updateSidebarZoomCompensation);
+
+workspaceInfoButton.addEventListener('click', () => {
+    const activeDevice = window.matchMedia('(pointer: coarse)').matches ? 'mobile' : 'desktop';
+    setWorkspaceInfoDevice(activeDevice);
+    workspaceInfoDialog.showModal();
+});
+
+workspaceInfoDialog.querySelector('.workspace-info-close').addEventListener('click', () => {
+    workspaceInfoDialog.close();
+});
+
+workspaceInfoDialog.addEventListener('click', (event) => {
+    if (event.target === workspaceInfoDialog) workspaceInfoDialog.close();
+});
+
+workspaceInfoDialog.querySelectorAll('.workspace-info-tab').forEach((tab) => {
+    tab.addEventListener('click', () => setWorkspaceInfoDevice(tab.dataset.device));
+});
+
+function setWorkspaceInfoDevice(device) {
+    workspaceInfoDialog.querySelectorAll('.workspace-info-tab').forEach((tab) => {
+        tab.setAttribute('aria-pressed', String(tab.dataset.device === device));
+    });
+    workspaceInfoDialog.querySelectorAll('.workspace-info-content').forEach((section) => {
+        section.hidden = section.dataset.deviceContent !== device;
+    });
+}
 
 function bringModuleToFront(element) {
     const modules = document.querySelectorAll(

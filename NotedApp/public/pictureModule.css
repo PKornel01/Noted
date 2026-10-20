@@ -1,7 +1,7 @@
 .picture-module {
     position: absolute;
     z-index: 1;
-    width: min(360px, calc(100vw - 48px));
+    width: min(360px, 38vw);
     overflow: hidden;
     color: var(--text);
     background: rgba(53, 17, 87, 0.78);
@@ -118,10 +118,24 @@
 
 @media (max-width: 760px) {
     .picture-module {
-        width: min(360px, calc(100vw - 40px));
+        width: min(240px, calc(100vw - 32px));
     }
 
     .picture-module-frame {
-        min-height: 140px;
+        min-height: clamp(72px, 20vw, 110px);
+    }
+
+    .picture-module-content {
+        padding: 7px;
+    }
+
+    .picture-module-handle {
+        min-height: 34px;
+        padding: 4px 6px;
+    }
+
+    .picture-module-url {
+        padding: 6px 7px;
+        font-size: 0.78rem;
     }
 }

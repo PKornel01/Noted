@@ -95,6 +95,28 @@ body{
     z-index: 10;
 }
 
+@media (pointer: fine) {
+    #sidebar {
+        left: calc(20px * var(--sidebar-scale, 1));
+        transform: translateY(-50%) scale(var(--sidebar-scale, 1));
+        transform-origin: left center;
+    }
+
+    #workspace-brand {
+        top: calc(20px * var(--sidebar-scale, 1));
+        left: calc(20px * var(--sidebar-scale, 1));
+        transform: scale(var(--sidebar-scale, 1));
+        transform-origin: top left;
+    }
+
+    #workspace-info-button {
+        top: calc(18px * var(--sidebar-scale, 1));
+        right: calc(20px * var(--sidebar-scale, 1));
+        transform: scale(var(--sidebar-scale, 1));
+        transform-origin: top right;
+    }
+}
+
 #sidebar #kanbanmaker {
     cursor: pointer;
     border:none;
@@ -150,17 +172,165 @@ body{
     margin: 0 auto;
 }
 
+#sidebar #kanbanmaker:hover,
+#sidebar #flowchartmaker:hover,
 #sidebar #notemaker:hover,
 #sidebar #picturemaker:hover {
     background-color: rgb(88, 19, 128);
+}
+
+#workspace-info-button {
+    position: fixed;
+    top: 18px;
+    right: 20px;
+    z-index: 12;
+    width: 38px;
+    height: 38px;
+    border: 1px solid var(--card-border);
+    border-radius: 50%;
+    color: var(--text);
+    background: rgba(69, 11, 102, 0.92);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+#workspace-info-button:hover,
+#workspace-info-button:focus-visible {
+    background: rgb(88, 19, 128);
+}
+
+#workspace-info-dialog {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    width: min(560px, calc(100vw - 32px));
+    max-width: none;
+    max-height: min(80vh, 80dvh);
+    padding: 20px;
+    overflow: auto;
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    color: var(--text);
+    background: rgba(31, 12, 55, 0.98);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+}
+
+#workspace-info-dialog::-webkit-scrollbar {
+    width: 15px;
+    height: 15px;
+}
+
+#workspace-info-dialog::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    background-clip: padding-box;
+    border-radius: 10px;
+}
+
+#workspace-info-dialog::-webkit-scrollbar-track:vertical {
+    margin: 22px 0;
+    border-left: 3px solid transparent;
+}
+
+#workspace-info-dialog::-webkit-scrollbar-track:horizontal {
+    margin: 0 22px;
+    border-top: 3px solid transparent;
+}
+
+#workspace-info-dialog::-webkit-scrollbar-thumb {
+    background: var(--purple);
+    border: 3px solid transparent;
+    background-clip: padding-box;
+    border-radius: 10px;
+}
+
+#workspace-info-dialog::-webkit-scrollbar-thumb:hover {
+    background: var(--pink);
+    background-clip: padding-box;
+}
+
+#workspace-info-dialog::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+#workspace-info-dialog {
+    scrollbar-color: var(--purple) rgba(255, 255, 255, 0.05);
+    scrollbar-width: thin;
+}
+
+#workspace-info-dialog::backdrop {
+    background: rgba(0, 0, 0, 0.68);
+    backdrop-filter: blur(3px);
+}
+
+.workspace-info-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.workspace-info-header h2 {
+    font-size: 1.3rem;
+}
+
+.workspace-info-close {
+    width: 36px;
+    height: 36px;
+    border: 0;
+    border-radius: 50%;
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.14);
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.workspace-info-tabs {
+    display: flex;
+    gap: 8px;
+    margin: 16px 0;
+    padding: 4px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.workspace-info-tab {
+    flex: 1;
+    min-height: 40px;
+    border: 0;
+    border-radius: 8px;
+    color: var(--text);
+    background: transparent;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.workspace-info-tab[aria-pressed="true"] {
+    background: linear-gradient(90deg, #e0207a, #d63090);
+}
+
+.workspace-info-content h3 {
+    margin-bottom: 10px;
+}
+
+.workspace-info-content ul {
+    display: grid;
+    gap: 10px;
+    padding-left: 22px;
+    line-height: 1.5;
+}
+
+.workspace-info-content li::marker {
+    color: #ff70b6;
 }
 
 #kanbanmaker img,
 #flowchartmaker img,
 #notemaker img,
 #picturemaker img {
-    width: 60px;
-    height: 60px;
+    width: 52px;
+    height: 52px;
     object-fit: contain;
 }
 
@@ -253,21 +423,21 @@ body{
     min-height: 100%;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 760px) and (pointer: coarse) {
     body {
         background-attachment: scroll;
     }
 
     #sidebar {
-        top: calc(44px + env(safe-area-inset-top));
-        left: max(10px, env(safe-area-inset-left));
+        top: calc(40px + env(safe-area-inset-top));
+        left: max(8px, env(safe-area-inset-left));
         transform: none;
-        width: calc(100% - 20px);
+        width: calc(100% - 16px);
         flex-direction: row;
         flex-wrap: wrap;
         justify-content: center;
-        gap: 12px;
-        padding: 8px;
+        gap: 7px;
+        padding: 6px;
         border: 1px solid rgba(255, 255, 255, 0.12);
         border-radius: 16px;
         backdrop-filter: blur(15px);
@@ -278,25 +448,32 @@ body{
         left: max(2px, env(safe-area-inset-left));
     }
 
+    #workspace-info-button {
+        top: max(6px, env(safe-area-inset-top));
+        right: max(8px, env(safe-area-inset-right));
+        width: 32px;
+        height: 32px;
+    }
+
     #sidebar #kanbanmaker,
     #sidebar #flowchartmaker,
     #sidebar #notemaker,
     #sidebar #picturemaker {
-        width: min(44vw, 180px);
-        height: 58px;
+        width: min(42vw, 150px);
+        height: 46px;
         flex-direction: row;
-        gap: 10px;
+        gap: 7px;
         margin: 0;
-        padding: 6px 12px;
-        font-size: 13px;
+        padding: 4px 8px;
+        font-size: 11px;
     }
 
     #kanbanmaker img,
     #flowchartmaker img,
     #notemaker img,
     #picturemaker img {
-        width: 40px;
-        height: 40px;
+        width: 30px;
+        height: 30px;
         flex: 0 0 auto;
     }
 
@@ -304,7 +481,7 @@ body{
         height: 100vh;
         height: 100dvh;
         margin-left: 0;
-        padding: calc(220px + env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+        padding: calc(176px + env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
     }
 
     .module-pane {
@@ -314,11 +491,21 @@ body{
     }
 }
 
-@media (max-width: 420px) {
+@media (max-width: 420px) and (pointer: coarse) {
     #sidebar {
-        top: calc(42px + env(safe-area-inset-top));
-        gap: 8px;
-        padding: 7px;
+        top: calc(38px + env(safe-area-inset-top));
+        gap: 5px;
+        padding: 5px;
+    }
+
+    #workspace-info-dialog {
+        width: calc(100vw - 24px);
+        max-height: calc(100dvh - 24px);
+        padding: 16px;
+    }
+
+    .workspace-info-header h2 {
+        font-size: 1.1rem;
     }
 
     #sidebar #kanbanmaker,
@@ -326,21 +513,21 @@ body{
     #sidebar #notemaker,
     #sidebar #picturemaker {
         width: calc(50% - 4px);
-        height: 52px;
-        gap: 7px;
-        padding: 5px 8px;
-        font-size: 12px;
+        height: 40px;
+        gap: 5px;
+        padding: 3px 6px;
+        font-size: 10px;
     }
 
     #kanbanmaker img,
     #flowchartmaker img,
     #notemaker img,
     #picturemaker img {
-        width: 34px;
-        height: 34px;
+        width: 26px;
+        height: 26px;
     }
 
     #sheet {
-        padding-top: calc(210px + env(safe-area-inset-top));
+        padding-top: calc(148px + env(safe-area-inset-top));
     }
 }

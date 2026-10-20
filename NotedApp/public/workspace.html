@@ -24,6 +24,43 @@
         <button id="notemaker" type="button"><img src="Note-icon.png" id="note-img" alt=""><span>Note</span></button>
         <button id="picturemaker" type="button"><img src="Picture-icon.png" id="picture-img" alt=""><span>Picture</span></button>
     </div>
+    <button id="workspace-info-button" type="button" aria-label="Workspace controls and tutorial" title="Workspace controls">?</button>
+    <dialog id="workspace-info-dialog" aria-labelledby="workspace-info-title">
+        <div class="workspace-info-header">
+            <h2 id="workspace-info-title">Workspace Controls</h2>
+            <button class="workspace-info-close" type="button" aria-label="Close controls">×</button>
+        </div>
+        <div class="workspace-info-tabs" role="group" aria-label="Choose device controls">
+            <button class="workspace-info-tab" type="button" data-device="desktop" aria-pressed="true">Desktop</button>
+            <button class="workspace-info-tab" type="button" data-device="mobile" aria-pressed="false">Mobile</button>
+        </div>
+        <section class="workspace-info-content" data-device-content="desktop">
+            <h3>Desktop controls</h3>
+            <ul>
+                <li>Use the module buttons on the left to add a Kanban board, Flowchart, Note, or Picture.</li>
+                <li>Drag a module by its header to move it around the canvas.</li>
+                <li><strong>Kanban:</strong> Add cards to columns, drag cards between columns, and click a card to view, edit, or delete it.</li>
+                <li><strong>Flowchart:</strong> Add objects, drag shapes to arrange them, double-click a shape label to rename it, use Connect to link shapes, and drag the corner to resize the chart.</li>
+                <li><strong>Note:</strong> Click in the note to edit; changes save automatically. You can also use Save.</li>
+                <li><strong>Picture:</strong> Add an image from a URL.</li>
+                <li>Use the pencil button to rename a module and the trash button to delete it.</li>
+                <li>Scroll the canvas to explore it; hold Ctrl and use the mouse wheel to zoom the view.</li>
+            </ul>
+        </section>
+        <section class="workspace-info-content" data-device-content="mobile" hidden>
+            <h3>Mobile controls</h3>
+            <ul>
+                <li>Tap a module button in the top toolbar to add a Kanban board, Flowchart, Note, or Picture.</li>
+                <li>Drag a module by its header to move it around the canvas.</li>
+                <li><strong>Kanban:</strong> Tap + Add Card to add a card, tap a card to edit or delete it, and drag cards to move them between columns.</li>
+                <li><strong>Flowchart:</strong> Add objects, drag shapes to arrange them, double-tap a shape label to rename it, use Connect to link shapes, and drag the corner to resize the chart.</li>
+                <li><strong>Note:</strong> Tap in the note to edit; changes save automatically. You can also use Save.</li>
+                <li><strong>Picture:</strong> Add an image from a URL</li>
+                <li>Use the pencil button to rename a module and the trash button to delete it.</li>
+                <li>Swipe or scroll the canvas to move around it.</li>
+            </ul>
+        </section>
+    </dialog>
 
     <div id="sheet">
         <div id="shared-pane" class="module-pane">

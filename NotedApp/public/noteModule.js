@@ -232,7 +232,7 @@ async function loadNoteModules() {
 document.getElementById('notemaker').addEventListener('click', async () => {
     const count = noteCanvas.querySelectorAll('.note-module').length;
     const isCompactViewport = window.matchMedia('(max-width: 760px)').matches;
-    const width = isCompactViewport ? Math.min(320, window.innerWidth - 40) : 320;
+    const width = isCompactViewport ? Math.min(240, window.innerWidth - 32) : 320;
     const id = `note-${Date.now()}-${noteModuleSequence++}`;
     const wrapper = buildNoteModule({ title: 'Note', data: '' }, id, {
         xPos: isCompactViewport

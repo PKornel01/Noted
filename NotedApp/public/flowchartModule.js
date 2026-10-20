@@ -261,8 +261,9 @@ fbtn.addEventListener('click', async () => {
     const chartCount = document.querySelectorAll('.chart-container').length;
     const isCompactViewport = window.matchMedia('(max-width: 760px)').matches;
     if (isCompactViewport) {
-        const chartWidth = Math.min(300, Math.max(150, fcontainer.clientWidth - 24));
+        const chartWidth = Math.min(260, Math.max(150, fcontainer.clientWidth - 24));
         chartWrapper.style.width = chartWidth + 'px';
+        chartWrapper.style.height = Math.min(180, Math.max(120, fcontainer.clientHeight * 0.3)) + 'px';
         chartWrapper.style.top = Math.min(16 + chartCount * 16, Math.max(0, fcontainer.clientHeight - 200)) + 'px';
         chartWrapper.style.left = Math.min(16 + chartCount * 16, Math.max(0, fcontainer.clientWidth - chartWidth)) + 'px';
     } else {

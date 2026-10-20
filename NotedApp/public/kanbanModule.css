@@ -27,7 +27,9 @@
     width: 500px;
     min-height: 400px;
     margin: 10px;
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: stretch;
     gap: 10px;
     padding: 10px;
     vertical-align: top;
@@ -36,7 +38,8 @@
 }
 
 .column {
-    width: 120px;
+    width: auto;
+    min-width: 0;
     min-height: 380px;
     color: var(--text);
     background-color: #d0d0d021;
@@ -64,7 +67,7 @@ h3 {
     border-radius: 20px;
     text-align: center;
     min-width: 360px;
-    max-width: 600px;
+    max-width: min(600px, 52vw);
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     animation: boardFadeIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
     overflow: hidden;
@@ -134,6 +137,7 @@ h3 {
 
 /* Card Styles */
 .card {
+    min-width: 0;
     background: var(--card);
     backdrop-filter: blur(15px) saturate(100%) brightness(1.2);
     -webkit-backdrop-filter: blur(18px);
@@ -177,7 +181,7 @@ h3 {
     font-weight: bold;
     margin-bottom: 5px;
     color: var(--muted);
-    word-wrap: break-word;
+    overflow-wrap: anywhere;
 }
 
 .card-delete-btn {
@@ -428,8 +432,38 @@ h3 {
 }
 
 #cardDescription{
-    background-color:rgba(17, 5, 31, 0.849) ;
+    background-color:rgba(17, 5, 31, 0.849);
 }
+/*Scrollbar customization*/
+
+#cardDescription::-webkit-scrollbar {
+    width: 15px; 
+}
+
+#cardDescription::-webkit-scrollbar-track {
+    margin: 22px 0;
+    background: rgba(255, 255, 255, 0.05);
+    border-left: 3px solid transparent;
+    background-clip: padding-box;
+    border-radius: 10px;
+}
+
+#cardDescription::-webkit-scrollbar-thumb {
+    background: var(--purple);
+    border: 3px solid transparent;
+    background-clip: padding-box;
+    border-radius: 10px;
+}
+
+#cardDescription::-webkit-scrollbar-thumb:hover {
+    background: var(--pink);
+    background-clip: padding-box;
+}
+
+#cardDescription::-webkit-scrollbar-corner {
+    background: transparent;
+}
+/*---*/
 
 #cardDescription:focus{
     outline: none;
@@ -486,9 +520,37 @@ h3 {
     transition: min-height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+@media (max-width: 1024px) {
+    .board-container {
+        width: min(480px, 52vw);
+        min-width: 0;
+    }
+
+    .board {
+        width: 100%;
+        min-height: 0;
+        height: auto;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 7px;
+        padding: 7px;
+    }
+
+    .column {
+        width: auto;
+        min-width: 0;
+        min-height: clamp(110px, 16vw, 150px);
+        padding: 7px;
+    }
+
+    .column-list {
+        min-height: clamp(56px, 9vw, 84px);
+    }
+}
+
 @media (max-width: 760px) {
     .board-container {
-        width: min(600px, calc(100vw - 56px));
+        width: min(360px, calc(100vw - 48px));
         min-width: 0;
     }
 
@@ -506,8 +568,8 @@ h3 {
     .column {
         width: auto;
         min-width: 0;
-        min-height: 180px;
-        padding: 8px;
+        min-height: 150px;
+        padding: 7px;
     }
 
     .column-list {
@@ -516,9 +578,9 @@ h3 {
     }
 
     .boardHandle {
-        min-height: 48px;
-        padding: 6px 8px;
-        gap: 6px;
+        min-height: 42px;
+        padding: 5px 7px;
+        gap: 5px;
         touch-action: none;
     }
 
@@ -575,7 +637,7 @@ h3 {
 
 @media (max-width: 420px) {
     .board-container {
-        width: calc(100vw - 48px);
+        width: min(280px, calc(100vw - 40px));
     }
 
     .board {
@@ -585,7 +647,8 @@ h3 {
     }
 
     .column {
-        min-height: 150px;
+        min-height: 120px;
+        padding: 6px;
     }
 
     .column-list {
@@ -594,8 +657,19 @@ h3 {
 
     .boardHandle {
         gap: 4px;
+        min-height: 38px;
+        padding: 4px 6px;
+        font-size: 0.78rem;
+    }
+
+    .column h3 {
+        font-size: 0.9rem;
+    }
+
+    .add-card-btn {
+        min-height: 34px;
         padding: 6px;
-        font-size: 0.85rem;
+        font-size: 0.8rem;
     }
 
     .board-title-edit-btn,
@@ -621,6 +695,6 @@ h3 {
 
 @media (hover: none) and (max-width: 760px) {
     .card-delete-btn {
-        opacity: 1;
+        display: none;
     }
 }

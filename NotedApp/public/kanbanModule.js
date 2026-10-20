@@ -231,7 +231,7 @@ kbtn.addEventListener('click', async () => {
     
     const boardCount = document.querySelectorAll('.board-container').length;
     if (window.matchMedia('(max-width: 760px)').matches) {
-        const boardWidth = Math.min(600, Math.max(180, kcontainer.clientWidth - 16));
+        const boardWidth = Math.min(480, Math.max(180, kcontainer.clientWidth - 16));
         boardWrapper.style.top = Math.min(16 + boardCount * 16, Math.max(0, kcontainer.clientHeight - 240)) + 'px';
         boardWrapper.style.left = Math.min(16 + boardCount * 16, Math.max(0, kcontainer.clientWidth - boardWidth)) + 'px';
     } else {
@@ -470,8 +470,6 @@ function setupCardImagePreview(modalOverlay, imageInput, initialUrl = '') {
 // Show modal that collects card title/description/image and creates a card
 function openAddCardModal(boardId, columnId) {
 
-    
-
     // Create modal for adding a new card
     const modalOverlay = document.createElement('div');
     modalOverlay.className = 'modal card-form-modal';
@@ -486,7 +484,7 @@ function openAddCardModal(boardId, columnId) {
                     <input type="text" id="cardTitle" placeholder="Enter card title" required>
                 </div>
                 <div class="form-group">
-                    <label for="cardDescription">Description: (Max 150 characters)</label>
+                    <label for="cardDescription">Description: (Max 350 characters)</label>
                     <textarea id="cardDescription" placeholder="Enter card description"></textarea>
                 </div>
                 <div class="form-group">
@@ -557,7 +555,7 @@ function openAddCardModal(boardId, columnId) {
         }
     });
 
-    const cardDescriptionMaxLength = 150; // Limit description to 150 characters
+    const cardDescriptionMaxLength = 350; // Limit description to 150 characters
     document.getElementById('cardDescription').addEventListener('input', function() {
         if (this.value.length > cardDescriptionMaxLength) {
             this.value = this.value.slice(0, cardDescriptionMaxLength);
@@ -609,6 +607,7 @@ function renderCard(boardId, columnId, card) {
     updateBoardHeight(boardId);
 }
 
+
 // Card details modal
 // Edit a card's title, description, and image URL.
 function openCardDetailsModal(boardId, columnId, card) {
@@ -625,8 +624,8 @@ function openCardDetailsModal(boardId, columnId, card) {
                     <input type="text" id="cardTitle" placeholder="Enter card title" required maxlength="15">
                 </div>
                 <div class="form-group">
-                    <label for="cardDescription">Description: (Max 150 characters)</label>
-                    <textarea id="cardDescription" placeholder="Enter card description" maxlength="150"></textarea>
+                    <label for="cardDescription">Description: (Max 350 characters)</label>
+                    <textarea id="cardDescription" placeholder="Enter card description" maxlength="350"></textarea>
                 </div>
                 <div class="form-group">
                     <label for="cardImage">Image URL:</label>
@@ -690,6 +689,7 @@ function openCardDetailsModal(boardId, columnId, card) {
         if (e.target === modalOverlay) closeModal();
     });
 }
+
 
 // Delete Card
 // Remove a card from both the in-memory store and the DOM, then persist

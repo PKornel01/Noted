@@ -93,7 +93,8 @@ function attachPictureModuleEvents(wrapper) {
     const syncImageState = () => {
         image.hidden = !image.getAttribute('src');
         placeholder.hidden = !image.getAttribute('src');
-        if (image.getAttribute('src')) input.value = image.getAttribute('src');
+        const imageSource = image.getAttribute('src') || '';
+        input.value = imageSource.startsWith('http://') || imageSource.startsWith('https://') ? imageSource : '';
     };
     syncImageState();
 
@@ -243,7 +244,7 @@ async function loadPictureModules() {
 document.getElementById('picturemaker').addEventListener('click', async () => {
     const count = pictureCanvas.querySelectorAll('.picture-module').length;
     const isCompactViewport = window.matchMedia('(max-width: 760px)').matches;
-    const width = isCompactViewport ? Math.min(360, window.innerWidth - 40) : 360;
+    const width = isCompactViewport ? Math.min(240, window.innerWidth - 32) : 360;
     const id = `picture-${Date.now()}-${pictureModuleSequence++}`;
     const wrapper = buildPictureModule({ title: 'Picture', data: '' }, id, {
         xPos: isCompactViewport

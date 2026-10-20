@@ -162,6 +162,7 @@ a{
     border: 1.8px solid rgb(37, 0, 248);
     position: relative;
     top: -25px;
+    cursor: pointer;
 }
 
 #nameInput{
