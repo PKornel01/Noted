@@ -2,6 +2,11 @@
     position: absolute;
     z-index: 1;
     width: min(320px, 34vw);
+    min-width: min(320px, 34vw);
+    height: 280px;
+    min-height: 280px;
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
     color: var(--text);
     background: rgba(53, 17, 87, 0.78);
@@ -44,8 +49,8 @@
 }
 
 .note-module-content {
-    min-height: 190px;
-    max-height: 48vh;
+    flex: 1;
+    min-height: 0;
     overflow: auto;
     padding: 14px;
     color: var(--text);
@@ -108,8 +113,29 @@
     justify-content: space-between;
     gap: 8px;
     padding: 8px 10px;
+    padding-right: 26px;
     color: var(--muted);
     font-size: 12px;
+}
+
+.note-module-resize {
+    position: absolute;
+    right: 3px;
+    bottom: 3px;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: 0;
+    background:
+        linear-gradient(135deg, transparent 55%, var(--muted) 56%, var(--muted) 62%, transparent 63%),
+        linear-gradient(135deg, transparent 72%, var(--muted) 73%, var(--muted) 79%, transparent 80%);
+    cursor: nwse-resize;
+    touch-action: none;
+}
+
+.note-module-resize:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 1px;
 }
 
 .note-module-save {
@@ -131,11 +157,12 @@
 @media (max-width: 760px) {
     .note-module {
         width: min(240px, calc(100vw - 32px));
+        min-width: min(240px, calc(100vw - 32px));
+        height: 190px;
+        min-height: 190px;
     }
 
     .note-module-content {
-        min-height: clamp(72px, 16dvh, 120px);
-        max-height: 32dvh;
         padding: 8px;
     }
 
@@ -146,6 +173,7 @@
 
     .note-module-footer {
         padding: 5px 7px;
+        padding-right: 24px;
         font-size: 10px;
     }
 

@@ -21,6 +21,7 @@ const initialPixelRatio = window.devicePixelRatio || 1;
 let moduleDragPointerX = null;
 let moduleDragPointerY = null;
 let moduleAutoScrollFrame = null;
+let moduleDragPositionUpdater = null;
 
 function updateSidebarZoomCompensation() {
     const scale = initialPixelRatio / (window.devicePixelRatio || initialPixelRatio);
@@ -42,10 +43,6 @@ workspaceInfoDialog.querySelector('.workspace-info-close').addEventListener('cli
     workspaceInfoDialog.close();
 });
 
-workspaceInfoDialog.addEventListener('click', (event) => {
-    if (event.target === workspaceInfoDialog) workspaceInfoDialog.close();
-});
-
 workspaceInfoDialog.querySelectorAll('.workspace-info-tab').forEach((tab) => {
     tab.addEventListener('click', () => setWorkspaceInfoDevice(tab.dataset.device));
 });
@@ -56,10 +53,6 @@ deleteConfirmDialog.querySelector('.delete-confirm-cancel').addEventListener('cl
 
 deleteConfirmDialog.querySelector('.delete-confirm-submit').addEventListener('click', () => {
     deleteConfirmDialog.close('confirm');
-});
-
-deleteConfirmDialog.addEventListener('click', (event) => {
-    if (event.target === deleteConfirmDialog) deleteConfirmDialog.close('cancel');
 });
 
 function confirmWorkspaceDeletion(title, message) {
@@ -108,6 +101,21 @@ function updateModuleDragPointer(clientX, clientY) {
     }
 }
 
+function setModuleDragPositionUpdater(updater) {
+    moduleDragPositionUpdater = updater;
+}
+
+function positionModuleUnderPointer(module, canvas, pointerOffsetX, pointerOffsetY) {
+    if (moduleDragPointerX === null || moduleDragPointerY === null) return;
+
+    const canvasRect = canvas.getBoundingClientRect();
+    const left = Math.max(0, moduleDragPointerX - canvasRect.left - pointerOffsetX);
+    const top = Math.max(0, moduleDragPointerY - canvasRect.top - pointerOffsetY);
+    module.style.left = `${left}px`;
+    module.style.top = `${top}px`;
+    growCanvasIfNeeded(canvas, left + module.offsetWidth, top + module.offsetHeight);
+}
+
 function autoScrollWorkspace() {
     if (moduleDragPointerY === null) {
         moduleAutoScrollFrame = null;
@@ -127,6 +135,9 @@ function autoScrollWorkspace() {
     const visiblePaneTop = Math.max(0, paneRect.top);
     const visiblePaneBottom = Math.min(window.innerHeight, paneRect.bottom);
 
+    const previousScrollLeft = pane.scrollLeft;
+    const previousScrollTop = pane.scrollTop;
+
     if (visiblePaneRight > visiblePaneLeft && moduleDragPointerX >= visiblePaneRight - edgeSize && paneCanScrollRight) {
         pane.scrollLeft += maxScrollStep;
     } else if (visiblePaneRight > visiblePaneLeft && moduleDragPointerX <= visiblePaneLeft + edgeSize && paneCanScrollLeft) {
@@ -139,12 +150,17 @@ function autoScrollWorkspace() {
         pane.scrollTop -= maxScrollStep;
     }
 
+    if ((pane.scrollLeft !== previousScrollLeft || pane.scrollTop !== previousScrollTop) && moduleDragPositionUpdater) {
+        moduleDragPositionUpdater();
+    }
+
     moduleAutoScrollFrame = requestAnimationFrame(autoScrollWorkspace);
 }
 
 function stopModuleAutoScroll() {
     moduleDragPointerX = null;
     moduleDragPointerY = null;
+    moduleDragPositionUpdater = null;
     if (moduleAutoScrollFrame !== null) {
         cancelAnimationFrame(moduleAutoScrollFrame);
         moduleAutoScrollFrame = null;
@@ -159,4 +175,15 @@ function growCanvasIfNeeded(canvas, neededWidth, neededHeight) {
     if (neededHeight + padding > canvas.offsetHeight) {
         canvas.style.height = (neededHeight + padding) + 'px';
     }
+}
+
+function centerModuleInWorkspaceView(canvas, module) {
+    const pane = document.getElementById('shared-pane');
+    const paneRect = pane.getBoundingClientRect();
+    const canvasRect = canvas.getBoundingClientRect();
+    const viewCenterX = paneRect.left + pane.clientLeft + pane.clientWidth / 2;
+    const viewCenterY = paneRect.top + pane.clientTop + pane.clientHeight / 2;
+
+    module.style.left = `${viewCenterX - canvasRect.left - module.offsetWidth / 2}px`;
+    module.style.top = `${viewCenterY - canvasRect.top - module.offsetHeight / 2}px`;
 }

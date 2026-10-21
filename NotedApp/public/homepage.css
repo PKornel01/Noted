@@ -167,11 +167,13 @@ a{
 
 #nameInput{
     border: 2px solid #d63aa0;
+    transition: border-color 0.25s, box-shadow 0.25s;
 }
 
 #nameInput:focus{
     outline: none;
-    border: 2px solid var(--purple);
+    border: 2px solid #ff55cc;
+    box-shadow: 0 0 0 3px rgba(255, 50, 180, 0.2);
 }
 
 #logoutBtn{

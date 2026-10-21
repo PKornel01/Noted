@@ -2,6 +2,9 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
+    const loginError = document.getElementById('loginError');
+    loginError.hidden = true;
+    loginError.classList.remove('login-error-bounce');
 
     const res = await fetch('/api/login', {
         method: 'POST',
@@ -12,7 +15,8 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     if (res.ok) {
         window.location.href ='homepage.html'
     } else {
-        const err = await res.json();
-        alert(err.error || 'Login failed');
+        loginError.hidden = false;
+        void loginError.offsetWidth;
+        loginError.classList.add('login-error-bounce');
     }
 });

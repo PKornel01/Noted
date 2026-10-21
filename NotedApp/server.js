@@ -57,6 +57,9 @@ app.post('/api/register', async (req, res) => {
         if (!email || !password) {
             return res.status(400).json({ error: 'Email and password are required}'});
         }
+        if (typeof password !== 'string' || password.length < 6) {
+            return res.status(400).json({ error: 'The password need to be at least 6 charaters long' });
+        }
 
         const connection = await app.locals.pool.getConnection();
 

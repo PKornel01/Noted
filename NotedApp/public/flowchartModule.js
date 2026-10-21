@@ -157,9 +157,7 @@ async function loadChartsFromDatabase() {
                 <div class="chart-body">
                     ${bodyContent}
                 </div>
-                <div class="resize-handle">
-        
-                </div>
+                <button class="resize-handle" type="button" aria-label="Resize flowchart" title="Resize flowchart"></button>
             </div>
             `;
 
@@ -222,9 +220,6 @@ function openChartTitleEditModal(chartWrapper) {
 
     const close = () => modal.remove();
     modal.querySelector('.form-cancel-btn').addEventListener('click', close);
-    modal.addEventListener('click', (event) => {
-        if (event.target === modal) close();
-    });
     modal.querySelector('form').addEventListener('submit', async (event) => {
         event.preventDefault();
         const newTitle = input.value.trim();
@@ -257,18 +252,11 @@ fbtn.addEventListener('click', async () => {
     chartWrapper.className = 'chart-container';
     chartWrapper.id = chartId;
 
-    // Set a starting position so they don't all stack perfectly on top of each other
-    const chartCount = document.querySelectorAll('.chart-container').length;
     const isCompactViewport = window.matchMedia('(max-width: 760px)').matches;
     if (isCompactViewport) {
         const chartWidth = Math.min(260, Math.max(150, fcontainer.clientWidth - 24));
         chartWrapper.style.width = chartWidth + 'px';
         chartWrapper.style.height = Math.min(180, Math.max(120, fcontainer.clientHeight * 0.3)) + 'px';
-        chartWrapper.style.top = Math.min(16 + chartCount * 16, Math.max(0, fcontainer.clientHeight - 200)) + 'px';
-        chartWrapper.style.left = Math.min(16 + chartCount * 16, Math.max(0, fcontainer.clientWidth - chartWidth)) + 'px';
-    } else {
-        chartWrapper.style.top = (100 + chartCount * 20) + "px";
-        chartWrapper.style.left = (100 + chartCount * 20) + "px";
     }
 
     // Create the chart element
@@ -292,12 +280,11 @@ fbtn.addEventListener('click', async () => {
                 </defs>
             </svg>
         </div>
-        <div class="resize-handle">
-        
-        </div>
+        <button class="resize-handle" type="button" aria-label="Resize flowchart" title="Resize flowchart"></button>
     </div>
     `;
     fcontainer.appendChild(chartWrapper);
+    centerModuleInWorkspaceView(fcontainer, chartWrapper);
     bringModuleToFront(chartWrapper);
 
     chartsData.set(chartId, { title: 'Untitled Chart' });
@@ -325,7 +312,9 @@ function makeInteractive(chartWrapper) {
     const Min_Height = 100;
 
     let dragMode = null; // 'move' or 'resize'
-    let startX, startY, startWidth, startHeight, startLeft, startTop;
+    let startX, startY, startWidth, startHeight;
+    let pointerOffsetX = 0;
+    let pointerOffsetY = 0;
 
     function startMove(e) {
         if (e.target.closest('.headerBtn')) return;
@@ -334,8 +323,9 @@ function makeInteractive(chartWrapper) {
         dragMode = 'move';
         startX = e.clientX;
         startY = e.clientY;
-        startLeft = parseFloat(chartWrapper.style.left || '0');
-        startTop = parseFloat(chartWrapper.style.top || '0');
+        const chartRect = chartWrapper.getBoundingClientRect();
+        pointerOffsetX = e.clientX - chartRect.left;
+        pointerOffsetY = e.clientY - chartRect.top;
         activate();
     };
 
@@ -353,6 +343,9 @@ function makeInteractive(chartWrapper) {
     function activate() { 
         chartWrapper.classList.add('active');
         bringModuleToFront(chartWrapper);
+        setModuleDragPositionUpdater(dragMode === 'move'
+            ? () => positionModuleUnderPointer(chartWrapper, fcontainer, pointerOffsetX, pointerOffsetY)
+            : null);
         updateModuleDragPointer(startX, startY);
         document.addEventListener('pointermove', onDrag);
         document.addEventListener('pointerup', stopDrag);
@@ -365,13 +358,7 @@ function makeInteractive(chartWrapper) {
         const dy = e.clientY - startY;
 
         if (dragMode === 'move') { 
-            const newLeft = Math.max(0, startLeft + dx);
-            const newTop = Math.max(0, startTop + dy);
-
-            chartWrapper.style.left = newLeft + 'px';
-            chartWrapper.style.top = newTop + 'px';
-
-            growCanvasIfNeeded(fcontainer, newLeft + chartWrapper.offsetWidth, newTop + chartWrapper.offsetHeight);
+            positionModuleUnderPointer(chartWrapper, fcontainer, pointerOffsetX, pointerOffsetY);
         }
         else if (dragMode === 'resize') { 
             const newWidth = Math.max(Min_Width, startWidth + dx);
@@ -394,6 +381,24 @@ function makeInteractive(chartWrapper) {
 
         persistChartToDB(chartWrapper)
     };
+
+    handle.addEventListener('keydown', (event) => {
+        const step = event.shiftKey ? 20 : 10;
+        let width = chartWrapper.offsetWidth;
+        let height = chartWrapper.offsetHeight;
+
+        if (event.key === 'ArrowRight') width += step;
+        else if (event.key === 'ArrowLeft') width -= step;
+        else if (event.key === 'ArrowDown') height += step;
+        else if (event.key === 'ArrowUp') height -= step;
+        else return;
+
+        event.preventDefault();
+        chartWrapper.style.width = `${Math.max(Min_Width, width)}px`;
+        chartWrapper.style.height = `${Math.max(Min_Height, height)}px`;
+        growCanvasIfNeeded(fcontainer, chartWrapper.offsetLeft + chartWrapper.offsetWidth, chartWrapper.offsetTop + chartWrapper.offsetHeight);
+        persistChartToDB(chartWrapper);
+    });
 
     header.addEventListener('pointerdown', startMove);
     handle.addEventListener('pointerdown', startResize);
@@ -472,14 +477,6 @@ function makeInteractive(chartWrapper) {
         cancelBtn.addEventListener('click', () => {
             document.body.removeChild(modalOverlay);
         });
-
-        modalOverlay.addEventListener('click', (e) => {
-        if (e.target === modalOverlay) {
-            document.body.removeChild(modalOverlay);
-        }
-        });
-
-
 
         const shapeButtons = {
         shpRoundRectangleMake: 'roundrectangle',

@@ -174,9 +174,6 @@ function openPictureTitleEditModal(wrapper) {
 
     const close = () => modal.remove();
     modal.querySelector('.form-cancel-btn').addEventListener('click', close);
-    modal.addEventListener('click', (event) => {
-        if (event.target === modal) close();
-    });
     modal.querySelector('form').addEventListener('submit', async (event) => {
         event.preventDefault();
         const newTitle = input.value.trim();
@@ -203,20 +200,16 @@ function makePictureModuleMovable(wrapper) {
     handle.addEventListener('pointerdown', (event) => {
         if (event.target.closest('button')) return;
         event.preventDefault();
-        const startX = event.clientX;
-        const startY = event.clientY;
-        const startLeft = wrapper.offsetLeft;
-        const startTop = wrapper.offsetTop;
+        const moduleRect = wrapper.getBoundingClientRect();
+        const pointerOffsetX = event.clientX - moduleRect.left;
+        const pointerOffsetY = event.clientY - moduleRect.top;
+        setModuleDragPositionUpdater(() => positionModuleUnderPointer(wrapper, pictureCanvas, pointerOffsetX, pointerOffsetY));
         bringModuleToFront(wrapper);
         updateModuleDragPointer(event.clientX, event.clientY);
 
         function move(moveEvent) {
             updateModuleDragPointer(moveEvent.clientX, moveEvent.clientY);
-            const left = Math.max(0, startLeft + moveEvent.clientX - startX);
-            const top = Math.max(0, startTop + moveEvent.clientY - startY);
-            wrapper.style.left = `${left}px`;
-            wrapper.style.top = `${top}px`;
-            growCanvasIfNeeded(pictureCanvas, left + wrapper.offsetWidth, top + wrapper.offsetHeight);
+            positionModuleUnderPointer(wrapper, pictureCanvas, pointerOffsetX, pointerOffsetY);
         }
 
         async function stop() {
@@ -252,19 +245,10 @@ async function loadPictureModules() {
 }
 
 document.getElementById('picturemaker').addEventListener('click', async () => {
-    const count = pictureCanvas.querySelectorAll('.picture-module').length;
-    const isCompactViewport = window.matchMedia('(max-width: 760px)').matches;
-    const width = isCompactViewport ? Math.min(240, window.innerWidth - 32) : 360;
     const id = `picture-${Date.now()}-${pictureModuleSequence++}`;
-    const wrapper = buildPictureModule({ title: 'Picture', data: '' }, id, {
-        xPos: isCompactViewport
-            ? Math.min(16 + count * 16, Math.max(0, pictureCanvas.clientWidth - width))
-            : 100 + count * 20,
-        yPos: isCompactViewport
-            ? Math.min(16 + count * 16, Math.max(0, pictureCanvas.clientHeight - 320))
-            : 100 + count * 20
-    });
+    const wrapper = buildPictureModule({ title: 'Picture', data: '' }, id);
     pictureCanvas.appendChild(wrapper);
+    centerModuleInWorkspaceView(pictureCanvas, wrapper);
     bringModuleToFront(wrapper);
     growCanvasIfNeeded(pictureCanvas, wrapper.offsetLeft + wrapper.offsetWidth, wrapper.offsetTop + wrapper.offsetHeight);
     try {
