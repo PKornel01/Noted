@@ -229,16 +229,6 @@ kbtn.addEventListener('click', async () => {
     boardWrapper.className = 'board-container';
     boardWrapper.id = boardId;
     
-    const boardCount = document.querySelectorAll('.board-container').length;
-    if (window.matchMedia('(max-width: 760px)').matches) {
-        const boardWidth = Math.min(480, Math.max(180, kcontainer.clientWidth - 16));
-        boardWrapper.style.top = Math.min(16 + boardCount * 16, Math.max(0, kcontainer.clientHeight - 240)) + 'px';
-        boardWrapper.style.left = Math.min(16 + boardCount * 16, Math.max(0, kcontainer.clientWidth - boardWidth)) + 'px';
-    } else {
-        boardWrapper.style.top = (100 + boardCount * 20) + "px";
-        boardWrapper.style.left = (100 + boardCount * 20) + "px";
-    }
-
     boardWrapper.innerHTML = `
         <div class="boardHandle">
             <span class="board-title-text">⠿ Title</span>
@@ -271,6 +261,7 @@ kbtn.addEventListener('click', async () => {
     `;
 
     kcontainer.appendChild(boardWrapper);
+    centerModuleInWorkspaceView(kcontainer, boardWrapper);
     bringModuleToFront(boardWrapper);
     growCanvasIfNeeded(
         kcontainer,
@@ -735,8 +726,14 @@ function updateBoardHeight(boardId) {
     const boardElement = boardWrapper && boardWrapper.querySelector('.board');
     if (!boardElement) return;
 
+    const previousTransition = boardElement.style.transition;
+    boardElement.style.transition = 'none';
+    boardElement.style.minHeight = '';
+    void boardElement.offsetHeight;
+
     if (window.matchMedia('(max-width: 420px)').matches) {
         boardElement.style.minHeight = '0px';
+        boardElement.style.transition = previousTransition;
         growCanvasIfNeeded(
             kcontainer,
             boardWrapper.offsetLeft + boardWrapper.offsetWidth,
@@ -760,8 +757,9 @@ function updateBoardHeight(boardId) {
         }
     });
     
-    // Apply the new height with smooth transition
+    // Measure after clearing the previous height so empty space is not counted as card content.
     boardElement.style.minHeight = maxHeight + 'px';
+    boardElement.style.transition = previousTransition;
     growCanvasIfNeeded(
         kcontainer,
         boardWrapper.offsetLeft + boardWrapper.offsetWidth,
@@ -891,8 +889,9 @@ function handleCardDrop(e) {
 
 // Make the entire board draggable by its handle and persist position
 function makeElementMovable(elmnt) {
-  let startX = 0, startY = 0, startLeft = 0, startTop = 0;
   const handle = elmnt.querySelector('.boardHandle');
+  let pointerOffsetX = 0;
+  let pointerOffsetY = 0;
 
   if (handle) {
     handle.addEventListener('pointerdown', startBoardDrag);
@@ -901,10 +900,10 @@ function makeElementMovable(elmnt) {
   function startBoardDrag(e) {
     if (e.target.closest('button')) return;
     e.preventDefault();
-    startX = e.clientX;
-    startY = e.clientY;
-    startLeft = elmnt.offsetLeft;
-    startTop = elmnt.offsetTop;
+    const moduleRect = elmnt.getBoundingClientRect();
+    pointerOffsetX = e.clientX - moduleRect.left;
+    pointerOffsetY = e.clientY - moduleRect.top;
+    setModuleDragPositionUpdater(() => positionModuleUnderPointer(elmnt, kcontainer, pointerOffsetX, pointerOffsetY));
     bringModuleToFront(elmnt);
     updateModuleDragPointer(e.clientX, e.clientY);
     document.addEventListener('pointermove', dragBoard);
@@ -915,14 +914,7 @@ function makeElementMovable(elmnt) {
   function dragBoard(e) {
     e.preventDefault();
     updateModuleDragPointer(e.clientX, e.clientY);
-    const newTop = Math.max(0, startTop + e.clientY - startY);
-    const newLeft = Math.max(0, startLeft + e.clientX - startX);
-
-    elmnt.style.top = newTop + "px";
-    elmnt.style.left = newLeft + "px";
-
-    growCanvasIfNeeded(kcontainer, newLeft + elmnt.offsetWidth, newTop + elmnt.offsetHeight);
-
+    positionModuleUnderPointer(elmnt, kcontainer, pointerOffsetX, pointerOffsetY);
   }
 
   function stopBoardDrag() {

@@ -49,6 +49,7 @@ function buildNoteModule(note, id, position = {}) {
             <span class="note-module-status" aria-live="polite">Saved</span>
             <button class="note-module-save" type="button">Save</button>
         </footer>
+        <button class="note-module-resize" type="button" aria-label="Resize note" title="Resize note"></button>
     `;
     wrapper.querySelector('.note-module-content').innerHTML = note.data || '';
     wrapper.querySelector('.note-module-title').textContent = note.title || 'Note';
@@ -127,7 +128,57 @@ function attachNoteModuleEvents(wrapper) {
             alert(`Could not delete note: ${error.message}`);
         }
     });
+    makeNoteModuleResizable(wrapper);
     makeNoteModuleMovable(wrapper);
+}
+
+function makeNoteModuleResizable(wrapper) {
+    const handle = wrapper.querySelector('.note-module-resize');
+    let startX;
+    let startY;
+    let startWidth;
+    let startHeight;
+
+    function resizeTo(width, height) {
+        const styles = getComputedStyle(wrapper);
+        wrapper.style.width = `${Math.max(parseFloat(styles.minWidth), width)}px`;
+        wrapper.style.height = `${Math.max(parseFloat(styles.minHeight), height)}px`;
+        growCanvasIfNeeded(noteCanvas, wrapper.offsetLeft + wrapper.offsetWidth, wrapper.offsetTop + wrapper.offsetHeight);
+    }
+
+    function stopResize() {
+        document.removeEventListener('pointermove', resize);
+        document.removeEventListener('pointerup', stopResize);
+        document.removeEventListener('pointercancel', stopResize);
+    }
+
+    function resize(event) {
+        resizeTo(startWidth + event.clientX - startX, startHeight + event.clientY - startY);
+    }
+
+    handle.addEventListener('pointerdown', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        startX = event.clientX;
+        startY = event.clientY;
+        startWidth = wrapper.offsetWidth;
+        startHeight = wrapper.offsetHeight;
+        bringModuleToFront(wrapper);
+        document.addEventListener('pointermove', resize);
+        document.addEventListener('pointerup', stopResize);
+        document.addEventListener('pointercancel', stopResize);
+    });
+
+    handle.addEventListener('keydown', (event) => {
+        const step = event.shiftKey ? 20 : 10;
+        if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+            event.preventDefault();
+            resizeTo(wrapper.offsetWidth + (event.key === 'ArrowRight' ? step : 0), wrapper.offsetHeight + (event.key === 'ArrowDown' ? step : 0));
+        } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+            event.preventDefault();
+            resizeTo(wrapper.offsetWidth - (event.key === 'ArrowLeft' ? step : 0), wrapper.offsetHeight - (event.key === 'ArrowUp' ? step : 0));
+        }
+    });
 }
 
 function openNoteTitleEditModal(wrapper) {
@@ -187,20 +238,16 @@ function makeNoteModuleMovable(wrapper) {
     handle.addEventListener('pointerdown', (event) => {
         if (event.target.closest('button')) return;
         event.preventDefault();
-        const startX = event.clientX;
-        const startY = event.clientY;
-        const startLeft = wrapper.offsetLeft;
-        const startTop = wrapper.offsetTop;
+        const moduleRect = wrapper.getBoundingClientRect();
+        const pointerOffsetX = event.clientX - moduleRect.left;
+        const pointerOffsetY = event.clientY - moduleRect.top;
+        setModuleDragPositionUpdater(() => positionModuleUnderPointer(wrapper, noteCanvas, pointerOffsetX, pointerOffsetY));
         bringModuleToFront(wrapper);
         updateModuleDragPointer(event.clientX, event.clientY);
 
         function move(moveEvent) {
             updateModuleDragPointer(moveEvent.clientX, moveEvent.clientY);
-            const left = Math.max(0, startLeft + moveEvent.clientX - startX);
-            const top = Math.max(0, startTop + moveEvent.clientY - startY);
-            wrapper.style.left = `${left}px`;
-            wrapper.style.top = `${top}px`;
-            growCanvasIfNeeded(noteCanvas, left + wrapper.offsetWidth, top + wrapper.offsetHeight);
+            positionModuleUnderPointer(wrapper, noteCanvas, pointerOffsetX, pointerOffsetY);
         }
 
         async function stop() {
@@ -235,19 +282,10 @@ async function loadNoteModules() {
 }
 
 document.getElementById('notemaker').addEventListener('click', async () => {
-    const count = noteCanvas.querySelectorAll('.note-module').length;
-    const isCompactViewport = window.matchMedia('(max-width: 760px)').matches;
-    const width = isCompactViewport ? Math.min(240, window.innerWidth - 32) : 320;
     const id = `note-${Date.now()}-${noteModuleSequence++}`;
-    const wrapper = buildNoteModule({ title: 'Note', data: '' }, id, {
-        xPos: isCompactViewport
-            ? Math.min(16 + count * 16, Math.max(0, noteCanvas.clientWidth - width))
-            : 100 + count * 20,
-        yPos: isCompactViewport
-            ? Math.min(16 + count * 16, Math.max(0, noteCanvas.clientHeight - 220))
-            : 100 + count * 20
-    });
+    const wrapper = buildNoteModule({ title: 'Note', data: '' }, id);
     noteCanvas.appendChild(wrapper);
+    centerModuleInWorkspaceView(noteCanvas, wrapper);
     bringModuleToFront(wrapper);
     growCanvasIfNeeded(noteCanvas, wrapper.offsetLeft + wrapper.offsetWidth, wrapper.offsetTop + wrapper.offsetHeight);
     try {

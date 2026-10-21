@@ -117,24 +117,22 @@
 
 .resize-handle {
     position: absolute;
-    right: 0;
-    bottom: 0;
-    width: 16px;
-    height: 16px;
+    right: 3px;
+    bottom: 3px;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: 0;
+    background:
+        linear-gradient(135deg, transparent 55%, var(--muted) 56%, var(--muted) 62%, transparent 63%),
+        linear-gradient(135deg, transparent 72%, var(--muted) 73%, var(--muted) 79%, transparent 80%);
     cursor: nwse-resize;
     touch-action: none;
 }
 
-.resize-handle::after {
-    content: "";
-    position: absolute;
-    right: 4px;
-    bottom: 4px;
-    width: 8px;
-    height: 8px;
-    border-right: 2px solid var(--accent);
-    border-bottom: 2px solid var(--accent);
-    opacity: 0.7;
+.resize-handle:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 1px;
 }
 
 .modal {
@@ -402,13 +400,8 @@
     }
 
     .resize-handle {
-        width: 20px;
-        height: 20px;
-    }
-
-    .resize-handle::after {
-        right: 5px;
-        bottom: 5px;
+        width: 18px;
+        height: 18px;
     }
 
     [class^="shp"] {
