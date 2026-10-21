@@ -413,13 +413,6 @@ function openBoardTitleEditModal(boardId, titleElement) {
         document.body.removeChild(modalOverlay);
     });
 
-    // Close modal when clicking outside
-    modalOverlay.addEventListener('click', (e) => {
-        if (e.target === modalOverlay) {
-            document.body.removeChild(modalOverlay);
-        }
-    });
-
     const boardTitleMaxLength = 50; // Limit title to 50 characters
     document.getElementById('boardTitleInput').addEventListener('input', function() {
         if (this.value.length > boardTitleMaxLength) {
@@ -536,13 +529,6 @@ function openAddCardModal(boardId, columnId) {
     const cancelBtn = modalOverlay.querySelector('.form-cancel-btn');
     cancelBtn.addEventListener('click', () => {
         document.body.removeChild(modalOverlay);
-    });
-
-    // Close modal when clicking outside
-    modalOverlay.addEventListener('click', (e) => {
-        if (e.target === modalOverlay) {
-            document.body.removeChild(modalOverlay);
-        }
     });
 
     const cardTitleMaxLength = 15; // Limit title to 15 characters
@@ -681,9 +667,6 @@ function openCardDetailsModal(boardId, columnId, card) {
         if (await deleteCard(boardId, columnId, card.id)) closeModal();
     });
 
-    modalOverlay.addEventListener('click', (e) => {
-        if (e.target === modalOverlay) closeModal();
-    });
 }
 
 

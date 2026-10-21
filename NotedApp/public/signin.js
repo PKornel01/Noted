@@ -4,6 +4,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     const password = document.getElementById('password').value;
     const loginError = document.getElementById('loginError');
     loginError.hidden = true;
+    loginError.classList.remove('login-error-bounce');
 
     const res = await fetch('/api/login', {
         method: 'POST',
@@ -15,5 +16,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         window.location.href ='homepage.html'
     } else {
         loginError.hidden = false;
+        void loginError.offsetWidth;
+        loginError.classList.add('login-error-bounce');
     }
 });

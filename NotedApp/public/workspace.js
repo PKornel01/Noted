@@ -43,10 +43,6 @@ workspaceInfoDialog.querySelector('.workspace-info-close').addEventListener('cli
     workspaceInfoDialog.close();
 });
 
-workspaceInfoDialog.addEventListener('click', (event) => {
-    if (event.target === workspaceInfoDialog) workspaceInfoDialog.close();
-});
-
 workspaceInfoDialog.querySelectorAll('.workspace-info-tab').forEach((tab) => {
     tab.addEventListener('click', () => setWorkspaceInfoDevice(tab.dataset.device));
 });
@@ -57,10 +53,6 @@ deleteConfirmDialog.querySelector('.delete-confirm-cancel').addEventListener('cl
 
 deleteConfirmDialog.querySelector('.delete-confirm-submit').addEventListener('click', () => {
     deleteConfirmDialog.close('confirm');
-});
-
-deleteConfirmDialog.addEventListener('click', (event) => {
-    if (event.target === deleteConfirmDialog) deleteConfirmDialog.close('cancel');
 });
 
 function confirmWorkspaceDeletion(title, message) {

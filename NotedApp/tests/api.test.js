@@ -235,6 +235,11 @@ test('registration validates input, creates a default project, rejects duplicate
     const missing = await request(port, '/api/register', { method: 'POST', body: { username: 'No Email' } });
     assert.equal(missing.status, 400);
 
+    const shortPassword = await register(port, { email: 'short@example.com', password: '12345' });
+    assert.equal(shortPassword.status, 400);
+    assert.equal(shortPassword.body.error, 'The password need to be at least 6 charaters long');
+    assert.equal(pool.state.users.length, 0);
+
     const created = await register(port, { username: 'alice', email: 'alice@example.com', bio: 'PM', title: 'Lead' });
     assert.equal(created.status, 200);
     assert.equal(created.body.email, 'alice@example.com');

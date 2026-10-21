@@ -220,9 +220,6 @@ function openChartTitleEditModal(chartWrapper) {
 
     const close = () => modal.remove();
     modal.querySelector('.form-cancel-btn').addEventListener('click', close);
-    modal.addEventListener('click', (event) => {
-        if (event.target === modal) close();
-    });
     modal.querySelector('form').addEventListener('submit', async (event) => {
         event.preventDefault();
         const newTitle = input.value.trim();
@@ -480,14 +477,6 @@ function makeInteractive(chartWrapper) {
         cancelBtn.addEventListener('click', () => {
             document.body.removeChild(modalOverlay);
         });
-
-        modalOverlay.addEventListener('click', (e) => {
-        if (e.target === modalOverlay) {
-            document.body.removeChild(modalOverlay);
-        }
-        });
-
-
 
         const shapeButtons = {
         shpRoundRectangleMake: 'roundrectangle',

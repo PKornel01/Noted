@@ -210,9 +210,6 @@ function openNoteTitleEditModal(wrapper) {
 
     const close = () => modal.remove();
     modal.querySelector('.form-cancel-btn').addEventListener('click', close);
-    modal.addEventListener('click', (event) => {
-        if (event.target === modal) close();
-    });
     modal.querySelector('form').addEventListener('submit', async (event) => {
         event.preventDefault();
         const newTitle = input.value.trim();
