@@ -80,6 +80,7 @@ async function persistPictureModule(wrapper) {
         }
         await savePictureRecord(metadata.persistentId, metadata.title, content, xPos, yPos);
     };
+    // Queue saves so content, title, and position updates are applied in order.
     metadata.savePromise = (metadata.savePromise || Promise.resolve()).then(save, save);
     return metadata.savePromise;
 }
@@ -91,6 +92,7 @@ function attachPictureModuleEvents(wrapper) {
     const image = content.querySelector('.picture-module-image');
     const placeholder = content.querySelector('.picture-module-placeholder');
     const syncImageState = () => {
+        // Rebuild the input and placeholder state from the image URL stored in the module.
         image.hidden = !image.getAttribute('src');
         placeholder.hidden = !image.getAttribute('src');
         const imageSource = image.getAttribute('src') || '';
@@ -106,6 +108,7 @@ function attachPictureModuleEvents(wrapper) {
         input.setCustomValidity('');
         if (!form.reportValidity()) return;
         const imageUrl = new URL(input.value.trim());
+        // Only allow web URLs so unsupported schemes cannot be used as image sources.
         if (imageUrl.protocol !== 'http:' && imageUrl.protocol !== 'https:') {
             input.setCustomValidity('Enter an HTTP or HTTPS image URL.');
             input.reportValidity();
@@ -186,6 +189,7 @@ function openPictureTitleEditModal(wrapper) {
             await persistPictureModule(wrapper);
             close();
         } catch (error) {
+            // Restore the saved title if persistence fails.
             metadata.title = previousTitle;
             wrapper.querySelector('.picture-module-title').textContent = previousTitle;
             console.error('Error saving picture title:', error);
@@ -221,6 +225,7 @@ function makePictureModuleMovable(wrapper) {
             document.removeEventListener('pointercancel', stop);
             stopModuleAutoScroll();
             try {
+                // Persist the final position after the pointer gesture ends.
                 await persistPictureModule(wrapper);
             } catch (error) {
                 console.error('Error saving picture position:', error);

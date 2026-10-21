@@ -75,6 +75,7 @@ async function persistNoteModule(wrapper) {
         }
         status.textContent = 'Saved';
     };
+    // Queue saves so rapid edits or drags cannot finish out of order.
     metadata.savePromise = (metadata.savePromise || Promise.resolve()).then(save, save);
     return metadata.savePromise;
 }
@@ -100,6 +101,7 @@ function attachNoteModuleEvents(wrapper) {
     content.addEventListener('input', () => {
         wrapper.querySelector('.note-module-status').textContent = 'Unsaved';
         clearTimeout(saveTimer);
+        // Wait for typing to pause before saving, while blur still saves immediately.
         saveTimer = setTimeout(save, 700);
     });
     content.addEventListener('blur', () => {
@@ -174,6 +176,7 @@ function openNoteTitleEditModal(wrapper) {
             await persistNoteModule(wrapper);
             close();
         } catch (error) {
+            // Keep the displayed title consistent with the last successfully saved title.
             metadata.title = previousTitle;
             wrapper.querySelector('.note-module-title').textContent = previousTitle;
             console.error('Error saving note title:', error);
@@ -209,6 +212,7 @@ function makeNoteModuleMovable(wrapper) {
             document.removeEventListener('pointercancel', stop);
             stopModuleAutoScroll();
             try {
+                // Persist the final position after the pointer gesture ends.
                 await persistNoteModule(wrapper);
             } catch (error) {
                 console.error('Error saving note position:', error);

@@ -112,7 +112,7 @@ async function loadBoardsFromDatabase() {
             
             boardWrapper.innerHTML = `
                 <div class="boardHandle">
-                    <span class="board-title-text">⠿ ${board.title}</span>
+                    <span class="board-title-text">${board.title}</span>
                     <button class="board-title-edit-btn" title="Click to edit board name">✎</button>
                     <button class="board-delete-btn" title="Delete board">🗑</button>
                 </div>
@@ -241,7 +241,7 @@ kbtn.addEventListener('click', async () => {
 
     boardWrapper.innerHTML = `
         <div class="boardHandle">
-            <span class="board-title-text">⠿ Title</span>
+            <span class="board-title-text">Title</span>
             <button class="board-title-edit-btn" title="Click to edit board name">✎</button>
             <button class="board-delete-btn" title="Delete board">🗑</button>
         </div>
@@ -405,7 +405,7 @@ function openBoardTitleEditModal(boardId, titleElement) {
             boardsData.get(boardId).title = newTitle;
             
             // Update DOM
-            titleElement.textContent = '⠿ ' + newTitle;
+            titleElement.textContent = newTitle;
             
             // Save to database
             const boardElement = document.getElementById(boardId);

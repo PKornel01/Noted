@@ -360,7 +360,10 @@ a{
 }
 
 .project-title[contenteditable="true"] {
-    outline: 1px dashed #5b8cff;
+    outline: 1px dashed var(--pink);
+    outline-offset: 3px;
+    border-radius: 3px;
+    box-shadow: 0 0 8px rgba(155, 48, 255, 0.45);
     cursor: text;
 }
 

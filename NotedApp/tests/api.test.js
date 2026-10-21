@@ -424,7 +424,16 @@ test('note and picture routes persist HTML modules with project ownership checks
       { route: 'pictures', type: 'picture', title: 'Project picture' },
     ]) {
       const endpoint = `/api/${route}`;
+      const otherEndpoint = `/api/${route === 'notes' ? 'pictures' : 'notes'}`;
       assert.equal((await request(port, endpoint, { headers: { Cookie: ownerCookie } })).status, 400);
+      assert.equal((await request(port, endpoint, {
+        method: 'POST', headers: { Cookie: ownerCookie },
+        body: { title: 'Missing project', data: '' },
+      })).status, 400);
+      assert.equal((await request(port, endpoint, {
+        method: 'POST', headers: { Cookie: ownerCookie },
+        body: { title: '   ', data: '', projectId },
+      })).status, 400);
       assert.equal((await request(port, endpoint, {
         method: 'POST', headers: { Cookie: ownerCookie },
         body: { title, data: 12, projectId },
@@ -450,15 +459,24 @@ test('note and picture routes persist HTML modules with project ownership checks
       assert.equal(stored.module_type, type);
 
       const loaded = await request(port, `${endpoint}?projectId=${projectId}`, { headers: { Cookie: ownerCookie } });
-      assert.equal(loaded.body.find((module) => module.id === created.body.id).data, '<p class="saved-content">Initial HTML</p>');
+      assert.deepEqual(loaded.body.find((module) => module.id === created.body.id), created.body);
+      const otherType = await request(port, `${otherEndpoint}?projectId=${projectId}`, { headers: { Cookie: ownerCookie } });
+      assert.equal(otherType.body.some((module) => module.id === created.body.id), false);
       assert.equal((await request(port, `${endpoint}?projectId=${projectId}`, { headers: { Cookie: otherCookie } })).status, 403);
       assert.equal((await request(port, `/api/${route === 'notes' ? 'pictures' : 'notes'}/${created.body.id}`, {
         method: 'PUT', headers: { Cookie: ownerCookie },
         body: { title, data: '<p>wrong type</p>' },
       })).status, 403);
+      assert.equal((await request(port, `/api/${route === 'notes' ? 'pictures' : 'notes'}/${created.body.id}`, {
+        method: 'DELETE', headers: { Cookie: ownerCookie },
+      })).status, 403);
       assert.equal((await request(port, `${endpoint}/${created.body.id}`, {
         method: 'PUT', headers: { Cookie: ownerCookie },
         body: { title: '', data: '<p>Updated</p>' },
+      })).status, 400);
+      assert.equal((await request(port, `${endpoint}/${created.body.id}`, {
+        method: 'PUT', headers: { Cookie: ownerCookie },
+        body: { title: 'Updated title', data: 12 },
       })).status, 400);
 
       const updated = await request(port, `${endpoint}/${created.body.id}`, {
@@ -466,14 +484,40 @@ test('note and picture routes persist HTML modules with project ownership checks
         body: { title: `Updated ${title}`, data: '<p class="saved-content">Updated HTML</p>', xPos: 35, yPos: 55 },
       });
       assert.equal(updated.status, 200);
-      assert.equal(updated.body.title, `Updated ${title}`);
-      assert.equal(pool.state.modules.find((module) => module.id === created.body.id).data, '<p class="saved-content">Updated HTML</p>');
+      assert.deepEqual(updated.body, {
+        id: String(created.body.id),
+        title: `Updated ${title}`,
+        data: '<p class="saved-content">Updated HTML</p>',
+        xPos: 35,
+        yPos: 55,
+      });
+      const updatedStored = pool.state.modules.find((module) => module.id === created.body.id);
+      assert.equal(updatedStored.module_type, type);
+      assert.equal(updatedStored.title, `Updated ${title}`);
+      assert.equal(updatedStored.data, '<p class="saved-content">Updated HTML</p>');
+      assert.equal(updatedStored.xPos, 35);
+      assert.equal(updatedStored.yPos, 55);
       assert.equal((await request(port, `${endpoint}/${created.body.id}`, {
         method: 'DELETE', headers: { Cookie: otherCookie },
       })).status, 403);
       assert.equal((await request(port, `${endpoint}/${created.body.id}`, {
         method: 'DELETE', headers: { Cookie: ownerCookie },
       })).body.success, true);
+      assert.equal(pool.state.modules.some((module) => module.id === created.body.id), false);
+
+      const defaults = await request(port, endpoint, {
+        method: 'POST', headers: { Cookie: ownerCookie },
+        body: { title: `  ${title} defaults  `, projectId },
+      });
+      assert.equal(defaults.status, 200);
+      assert.deepEqual(defaults.body, {
+        id: defaults.body.id,
+        title: `${title} defaults`,
+        data: '',
+        xPos: 0,
+        yPos: 0,
+      });
+      assert.equal(pool.state.modules.find((module) => module.id === defaults.body.id).module_type, type);
     }
   });
 });
