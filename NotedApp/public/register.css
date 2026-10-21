@@ -222,6 +222,12 @@ h1 {
   transform: translateY(-1px);
 }
 
+.password-error {
+  margin-top: 10px;
+  color: #ff4d4d;
+  text-align: center;
+}
+
 .divider {
   display: flex;
   align-items: center;

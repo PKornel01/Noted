@@ -7,7 +7,7 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
     const passwordDoesntMatch = document.getElementById('passwordDoesntMatch')
 
     if (confirmPassword === password) {
-        passwordDoesntMatch.innerHTML = ``
+        passwordDoesntMatch.textContent = ''
         const res = await fetch('/api/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -21,6 +21,6 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
             alert(err.error || 'Registration failed')
         }
     } else {
-        passwordDoesntMatch.innerHTML = `Password Doesn't Match!`
+        passwordDoesntMatch.textContent = "Password doesn't match"
     }
 });
